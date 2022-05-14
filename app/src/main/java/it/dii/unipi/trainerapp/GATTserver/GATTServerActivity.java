@@ -34,6 +34,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import it.dii.unipi.trainerapp.GATTserver.profiles.athleteProfile.AthleteProfile;
+import it.dii.unipi.trainerapp.athlete.Athlete;
+import it.dii.unipi.trainerapp.athlete.AthletesManager;
+import it.dii.unipi.trainerapp.utilities.DeviceID;
 
 public class GATTServerActivity extends AppCompatActivity {
     private static final String TAG = GATTServerActivity.class.getSimpleName();
@@ -44,6 +47,8 @@ public class GATTServerActivity extends AppCompatActivity {
     private BluetoothLeAdvertiser mBluetoothLeAdvertiser;
     /* Collection of notification subscribers */
     private Set<BluetoothDevice> mRegisteredDevices = new HashSet<>();
+
+    private AthletesManager athletesManager = AthletesManager.getInstance();
 
     @SuppressWarnings("MissingPermission")
     @Override
@@ -381,10 +386,21 @@ public class GATTServerActivity extends AppCompatActivity {
         public void onConnectionStateChange(BluetoothDevice device, int status, int newState) {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 Log.i(TAG, "BluetoothDevice CONNECTED: " + device);
+                // here we have to add the device to the list of athletes devices
+                boolean added = athletesManager.addAthlete(new DeviceID(device));
+                if( ! added ){
+                    Log.d(TAG, "the device was not added since it is already present");
+                }
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.i(TAG, "BluetoothDevice DISCONNECTED: " + device);
                 //Remove device from any active subscriptions
                 mRegisteredDevices.remove(device);
+                Athlete athleteMarkedAsAway = athletesManager.markAthleteAsAway(new DeviceID(device).toString());
+                if(athleteMarkedAsAway == null){
+                    Log.e(TAG, "the just disconnected device did not correspond to an athlete | device: " + device);
+                }else{
+                    Log.i(TAG, "the athlete '" + athleteMarkedAsAway.getName() + "' was marked as away");
+                }
             }
         }
 
@@ -397,12 +413,13 @@ public class GATTServerActivity extends AppCompatActivity {
                 return;
             }
             if(AthleteProfile.ATHLETE_NAME_CHARACTERISTIC.equals(characteristic.getUuid())){
-                Log.i(TAG, "received a read request on ATHLETE_NAME_CHARACTERISTIC from '?'");
+                Log.i(TAG, "received a read request on ATHLETE_NAME_CHARACTERISTIC from '"+ device + "'");
                 mBluetoothGattServer.sendResponse(device,
                         requestId,
                         BluetoothGatt.GATT_SUCCESS,
                         0,
-                        AthleteProfile.getAthleteName(device));
+                        athletesManager.getName(new DeviceID(device).toString()).getBytes(StandardCharsets.UTF_8)//AthleteProfile.getAthleteName(device)
+                );
             }
             /*
             long now = System.currentTimeMillis();
@@ -444,7 +461,8 @@ public class GATTServerActivity extends AppCompatActivity {
                 return;
             }
             if(AthleteProfile.ATHLETE_NAME_CHARACTERISTIC.equals(characteristic.getUuid())) {
-                AthleteProfile.setAthleteName(device.getAddress(), value);
+                String athleteNameString = new String(value, StandardCharsets.UTF_8);
+                athletesManager.setName(new DeviceID(device).toString(), athleteNameString);//AthleteProfile.setAthleteName(device.getAddress(), value);
                 if(responseNeeded) {
                     mBluetoothGattServer.sendResponse(device,
                             requestId,

@@ -26,20 +26,29 @@ import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.widget.ListView;
 import android.widget.Toast;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
 import it.dii.unipi.trainerapp.GATTserver.profiles.athleteProfile.AthleteProfile;
+import it.dii.unipi.trainerapp.MainActivity;
+import it.dii.unipi.trainerapp.R;
 import it.dii.unipi.trainerapp.athlete.Athlete;
 import it.dii.unipi.trainerapp.athlete.AthletesManager;
+import it.dii.unipi.trainerapp.ui.AthleteAdapter;
 import it.dii.unipi.trainerapp.utilities.DeviceID;
 
 public class GATTServerActivity extends AppCompatActivity {
     private static final String TAG = GATTServerActivity.class.getSimpleName();
+
+    public static AthleteAdapter adapter; //should be private
+    public static  ArrayList<Athlete> arrayOfAthletes; //should be private
 
     /* Bluetooth API */
     private BluetoothManager mBluetoothManager;
@@ -388,6 +397,19 @@ public class GATTServerActivity extends AppCompatActivity {
                 Log.i(TAG, "BluetoothDevice CONNECTED: " + device);
                 // here we have to add the device to the list of athletes devices
                 boolean added = athletesManager.addAthlete(new DeviceID(device));
+                Athlete newAthlete = athletesManager.getAthlete(new DeviceID(device).toString());
+
+                //add the new connected athlete to the adapter,
+                //that bridges for the ListView and let it updates the UI
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        if(adapter.getPosition(newAthlete)<0) {
+                            adapter.add(newAthlete);
+                            adapter.notifyDataSetChanged();
+                        }
+                    }
+                });
+
                 if( ! added ){
                     Log.d(TAG, "the device was not added since it is already present");
                 }
@@ -400,6 +422,12 @@ public class GATTServerActivity extends AppCompatActivity {
                     Log.e(TAG, "the just disconnected device did not correspond to an athlete | device: " + device);
                 }else{
                     Log.i(TAG, "the athlete '" + athleteMarkedAsAway.getName() + "' was marked as away");
+                    runOnUiThread(new Runnable() {
+                        public void run() {
+                            adapter.remove(athleteMarkedAsAway);
+                            adapter.notifyDataSetChanged();
+                        }
+                    });
                 }
             }
         }

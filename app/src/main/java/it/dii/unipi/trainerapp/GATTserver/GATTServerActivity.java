@@ -2,6 +2,7 @@ package it.dii.unipi.trainerapp.GATTserver;
 
 
 import android.Manifest;
+import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -22,6 +23,8 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -44,7 +47,7 @@ import it.dii.unipi.trainerapp.athlete.AthletesManager;
 import it.dii.unipi.trainerapp.ui.AthleteAdapter;
 import it.dii.unipi.trainerapp.utilities.DeviceID;
 
-public class GATTServerActivity extends AppCompatActivity {
+public class GATTServerActivity<ServiceHandler> extends Service {
     private static final String TAG = GATTServerActivity.class.getSimpleName();
 
     public static AthleteAdapter adapter; //should be private
@@ -54,27 +57,36 @@ public class GATTServerActivity extends AppCompatActivity {
     private BluetoothManager mBluetoothManager;
     private BluetoothGattServer mBluetoothGattServer;
     private BluetoothLeAdvertiser mBluetoothLeAdvertiser;
+
     /* Collection of notification subscribers */
     private Set<BluetoothDevice> mRegisteredDevices = new HashSet<>();
+
+    /* needed to manage the thread created by the service */
+    private Looper serviceLooper;
+    private ServiceHandler serviceHandler;
 
     private AthletesManager athletesManager = AthletesManager.getInstance();
 
     @SuppressWarnings("MissingPermission")
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    public void onCreate() {
+        //super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_server);
-
         //mLocalTimeView = (TextView) findViewById(R.id.text_time);
 
+        // Start up the thread running the service. Note that we create a
+        // separate thread because the service normally runs in the process's
+        // main thread, which we don't want to block. We also make it
+        // background priority so CPU-intensive work doesn't disrupt our UI.
+
+        // TODO: we have to decide which code should be performed in the thread
 
         mBluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
         BluetoothAdapter bluetoothAdapter = mBluetoothManager.getAdapter();
         // We can't continue without proper Bluetooth support
         if (!checkBluetoothSupport(bluetoothAdapter)) {
             Log.i(TAG, "Bluetooth not supported! finishing...");
-            finish();
+            stopSelf();
         }
 
         // Register for system Bluetooth events
@@ -100,8 +112,8 @@ public class GATTServerActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        //super.onStart();
 
         /*
         // Register for system clock events
@@ -111,17 +123,24 @@ public class GATTServerActivity extends AppCompatActivity {
         filter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
         registerReceiver(mTimeReceiver, filter);
          */
+        return START_NOT_STICKY; // decide which policy is the best fit for the Service
     }
 
     @Override
+    public IBinder onBind(Intent intent) {
+        // We don't provide binding, so return null
+        return null;
+    }
+
+    // onStop is not needed because the Service is independent from the Activity
+    /*@Override
     protected void onStop() {
         super.onStop();
         //unregisterReceiver(mTimeReceiver);
-    }
+    }*/
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    public void onDestroy() {
 
         BluetoothAdapter bluetoothAdapter = mBluetoothManager.getAdapter();
         if (bluetoothAdapter.isEnabled()) {

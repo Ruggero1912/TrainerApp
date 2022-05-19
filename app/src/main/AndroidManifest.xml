@@ -13,6 +13,8 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"
         android:maxSdkVersion="30" />
 
+    <uses-feature android:name="android.hardware.type.watch"/>
+
     <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <application
@@ -22,6 +24,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.TrainerApp">
+        <service android:name=".GATTserver.GATTServerActivity"/>
         <activity
             android:name=".MainActivity"
             android:exported="true">

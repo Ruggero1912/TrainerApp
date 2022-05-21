@@ -2,13 +2,14 @@ package it.dii.unipi.trainerapp.athlete;
 
 import android.util.Log;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
 import it.dii.unipi.trainerapp.utilities.DeviceID;
 
-public class Athlete {
+public class Athlete implements Serializable {
     private static final String TAG = Athlete.class.getSimpleName();
 
     private DeviceID athleteID;

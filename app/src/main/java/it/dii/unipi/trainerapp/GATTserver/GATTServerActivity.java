@@ -23,13 +23,18 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.Message;
+import android.os.Process;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.widget.ListView;
 import android.widget.Toast;
@@ -47,11 +52,8 @@ import it.dii.unipi.trainerapp.athlete.AthletesManager;
 import it.dii.unipi.trainerapp.ui.AthleteAdapter;
 import it.dii.unipi.trainerapp.utilities.DeviceID;
 
-public class GATTServerActivity<ServiceHandler> extends Service {
+public class GATTServerActivity extends Service {
     private static final String TAG = GATTServerActivity.class.getSimpleName();
-
-    public static AthleteAdapter adapter; //should be private
-    public static  ArrayList<Athlete> arrayOfAthletes; //should be private
 
     /* Bluetooth API */
     private BluetoothManager mBluetoothManager;
@@ -62,10 +64,28 @@ public class GATTServerActivity<ServiceHandler> extends Service {
     private Set<BluetoothDevice> mRegisteredDevices = new HashSet<>();
 
     /* needed to manage the thread created by the service */
+    private HandlerThread thread;
     private Looper serviceLooper;
     private ServiceHandler serviceHandler;
 
     private AthletesManager athletesManager = AthletesManager.getInstance();
+
+    // Handler that receives messages from the thread
+    private final class ServiceHandler extends Handler {
+        public ServiceHandler(Looper looper) {
+            super(looper);
+        }
+        @Override
+        public void handleMessage(Message msg) {
+            // we insert here the functionalities executed by the thread
+            startAdvertising();
+            startServer();
+
+            // Stop the service using the startId, so that we don't stop
+            // the service in the middle of handling another job
+            //stopSelf(msg.arg1);
+        }
+    }
 
     @SuppressWarnings("MissingPermission")
     @Override
@@ -73,13 +93,6 @@ public class GATTServerActivity<ServiceHandler> extends Service {
         //super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_server);
         //mLocalTimeView = (TextView) findViewById(R.id.text_time);
-
-        // Start up the thread running the service. Note that we create a
-        // separate thread because the service normally runs in the process's
-        // main thread, which we don't want to block. We also make it
-        // background priority so CPU-intensive work doesn't disrupt our UI.
-
-        // TODO: we have to decide which code should be performed in the thread
 
         mBluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
         BluetoothAdapter bluetoothAdapter = mBluetoothManager.getAdapter();
@@ -106,8 +119,19 @@ public class GATTServerActivity<ServiceHandler> extends Service {
             }
         } else {
             Log.d(TAG, "Bluetooth enabled...starting services");
-            startAdvertising();
-            startServer();
+
+            // Start up the thread running the service. Note that we create a
+            // separate thread because the service normally runs in the process's
+            // main thread, which we don't want to block. We also make it
+            // background priority so CPU-intensive work doesn't disrupt our UI.
+
+            thread = new HandlerThread("ServiceStartArguments",
+                    Process.THREAD_PRIORITY_BACKGROUND);
+            thread.start();
+
+            // Get the HandlerThread's Looper and use it for our Handler
+            serviceLooper = thread.getLooper();
+            serviceHandler = new ServiceHandler(serviceLooper);
         }
     }
 
@@ -123,6 +147,13 @@ public class GATTServerActivity<ServiceHandler> extends Service {
         filter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
         registerReceiver(mTimeReceiver, filter);
          */
+
+        // For each start request, send a message to start a job and deliver the
+        // start ID so we know which request we're stopping when we finish the job
+        Message msg = serviceHandler.obtainMessage();
+        msg.arg1 = startId;
+        serviceHandler.sendMessage(msg);
+
         return START_NOT_STICKY; // decide which policy is the best fit for the Service
     }
 
@@ -146,9 +177,19 @@ public class GATTServerActivity<ServiceHandler> extends Service {
         if (bluetoothAdapter.isEnabled()) {
             stopServer();
             stopAdvertising();
+            Log.d(TAG, "Sium");
         }
 
         unregisterReceiver(mBluetoothReceiver);
+
+        boolean closed = thread.quit();
+        if(!closed){
+            Log.d(TAG, "Unable to quit the Thread");
+        } else {
+            Log.d(TAG, "GATTServer Thread correctly killed");
+        };
+
+        stopSelf();
     }
 
     /**
@@ -330,6 +371,8 @@ public class GATTServerActivity<ServiceHandler> extends Service {
         if (mBluetoothGattServer == null) {
             Log.w(TAG, "Unable to create GATT server");
             return;
+        } else {
+            Log.i(TAG, "GATT server created");
         }
 
         //mBluetoothGattServer.addService(TimeProfile.createTimeService());
@@ -418,19 +461,12 @@ public class GATTServerActivity<ServiceHandler> extends Service {
                 boolean added = athletesManager.addAthlete(new DeviceID(device));
                 Athlete newAthlete = athletesManager.getAthlete(new DeviceID(device).toString());
 
-                //add the new connected athlete to the adapter,
-                //that bridges for the ListView and let it updates the UI
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        if(adapter.getPosition(newAthlete)<0) {
-                            adapter.add(newAthlete);
-                            adapter.notifyDataSetChanged();
-                        }
-                    }
-                });
-
-                if( ! added ){
+                if( !added ){
                     Log.d(TAG, "the device was not added since it is already present");
+                } else {
+                    // send intent to the main activity to add the new connected athlete to the adapter,
+                    // that bridges for the ListView and let it updates the UI
+                    sendMessage(newAthlete, "add-athlete");
                 }
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.i(TAG, "BluetoothDevice DISCONNECTED: " + device);
@@ -441,14 +477,30 @@ public class GATTServerActivity<ServiceHandler> extends Service {
                     Log.e(TAG, "the just disconnected device did not correspond to an athlete | device: " + device);
                 }else{
                     Log.i(TAG, "the athlete '" + athleteMarkedAsAway.getName() + "' was marked as away");
-                    runOnUiThread(new Runnable() {
-                        public void run() {
-                            adapter.remove(athleteMarkedAsAway);
-                            adapter.notifyDataSetChanged();
-                        }
-                    });
+                    sendMessage(athleteMarkedAsAway, "remove-athlete");
                 }
             }
+        }
+
+        // Send an Intent with an action named "update-ahtlete-list", the Intent sent is
+        // received by the MainActivity.
+        private void sendMessage(Athlete newAthlete, String action_to_perform) {
+            Log.d("sender", "Broadcasting message");
+            Intent intent = new Intent("update-athlete-list");
+            // You can also include some extra data.
+            intent.putExtra("athlete", newAthlete);
+            intent.putExtra("action-to-perform", action_to_perform);
+            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+        }
+
+        private void sendMessage(Athlete newAthlete, String action_to_perform, Athlete athlete_to_remove) {
+            Log.d("sender", "Broadcasting message");
+            Intent intent = new Intent("update-athlete-list");
+            // You can also include some extra data.
+            intent.putExtra("athlete", newAthlete);
+            intent.putExtra("action-to-perform", action_to_perform);
+            intent.putExtra("athlete-to-remove", athlete_to_remove);
+            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
         }
 
         @Override
@@ -508,8 +560,15 @@ public class GATTServerActivity<ServiceHandler> extends Service {
                 return;
             }
             if(AthleteProfile.ATHLETE_NAME_CHARACTERISTIC.equals(characteristic.getUuid())) {
+                Athlete oldAthlete = athletesManager.getAthlete(new DeviceID(device).toString());
+
                 String athleteNameString = new String(value, StandardCharsets.UTF_8);
                 athletesManager.setName(new DeviceID(device).toString(), athleteNameString);//AthleteProfile.setAthleteName(device.getAddress(), value);
+
+                // send intent to the MainActivity to update the GUI
+                Athlete updatedAthlete = athletesManager.getAthlete(new DeviceID(device).toString());
+                sendMessage(updatedAthlete, "update-athlete", oldAthlete);
+
                 if(responseNeeded) {
                     mBluetoothGattServer.sendResponse(device,
                             requestId,

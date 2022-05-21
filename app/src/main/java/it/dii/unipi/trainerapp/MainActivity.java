@@ -54,14 +54,17 @@ public class MainActivity extends GATTServerActivity {
                             trainerName = data.getStringExtra("trainerName");
                             settingsInizialized = true;
                             Toast.makeText(getApplicationContext(),"Settings saved successfully!", Toast.LENGTH_SHORT).show();
+                            TextView trainerNameLabel = (TextView) findViewById(R.id.welcomeLabel);
+                            trainerNameLabel.append(trainerName);
                         }
                     });
             //send an intent to Settings Activity
             openSomeActivityForResult();
         }
-
-        TextView trainerNameLabel = (TextView) findViewById(R.id.welcomeLabel);
-        trainerNameLabel.append(trainerName);
+    else {
+            TextView trainerNameLabel = (TextView) findViewById(R.id.welcomeLabel);
+            trainerNameLabel.append(trainerName);
+        }
     }
 
     public void openSomeActivityForResult() {

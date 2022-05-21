@@ -163,7 +163,7 @@ public class GATTServerActivity extends AppCompatActivity {
                 // to handle the case where the user grants the permission. See the documentation
                 // for ActivityCompat#requestPermissions for more details.
                 //FENOM: qui sarebbe meglio gestire la richiesta dei permessi e poi non fare return ma vedere come si fa in questo caso
-                Toast.makeText(getApplicationContext(), "BLUETOOTH_CONNECT permission missing! return...", Toast.LENGTH_LONG);
+                Toast.makeText(getApplicationContext(), "BLUETOOTH_CONNECT permission missing! return...", Toast.LENGTH_LONG).show();
                 return false;
             }
         }else{

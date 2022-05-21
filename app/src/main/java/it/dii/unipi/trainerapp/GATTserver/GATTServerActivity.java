@@ -100,6 +100,7 @@ public class GATTServerActivity extends Service {
         if (!checkBluetoothSupport(bluetoothAdapter)) {
             Log.i(TAG, "Bluetooth not supported! finishing...");
             stopSelf();
+            return;
         }
 
         // Register for system Bluetooth events
@@ -177,10 +178,11 @@ public class GATTServerActivity extends Service {
         if (bluetoothAdapter.isEnabled()) {
             stopServer();
             stopAdvertising();
-            Log.d(TAG, "Sium");
         }
 
         unregisterReceiver(mBluetoothReceiver);
+
+        Log.d(TAG, "Going to call thread.quit()");
 
         boolean closed = thread.quit();
         if(!closed){

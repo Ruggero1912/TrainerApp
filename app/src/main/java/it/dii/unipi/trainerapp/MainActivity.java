@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     for(int i=0 ; i<adapter.getCount() ; i++){
                         Athlete obj = (Athlete) adapter.getItem(i);
-                        Log.i(TAG, "Adapter item " + i + ": " + obj.getName());
+                        Log.d(TAG, "Adapter item " + i + ": " + obj.getName());
                     }
                     break;
                 case "update-athlete":

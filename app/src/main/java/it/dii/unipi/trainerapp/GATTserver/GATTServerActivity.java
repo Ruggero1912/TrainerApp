@@ -392,9 +392,10 @@ public class GATTServerActivity extends AppCompatActivity {
     private BluetoothGattServerCallback mGattServerCallback = new BluetoothGattServerCallback() {
 
         @Override
+        @SuppressWarnings("MissingPermission")
         public void onConnectionStateChange(BluetoothDevice device, int status, int newState) {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
-                Log.i(TAG, "BluetoothDevice CONNECTED: " + device);
+                Log.i(TAG, "BluetoothDevice CONNECTED: " + device + " - device name: " + device.getName() );
                 // here we have to add the device to the list of athletes devices
                 boolean added = athletesManager.addAthlete(new DeviceID(device));
                 Athlete newAthlete = athletesManager.getAthlete(new DeviceID(device).toString());

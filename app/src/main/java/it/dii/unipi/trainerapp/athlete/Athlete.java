@@ -6,18 +6,19 @@ import java.time.LocalDateTime;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
+import it.dii.unipi.trainerapp.utilities.Activity;
 import it.dii.unipi.trainerapp.utilities.DeviceID;
 
 public class Athlete {
     private static final String TAG = Athlete.class.getSimpleName();
 
+
     private DeviceID athleteID;
     private String name;
     private NavigableMap<LocalDateTime, Integer> heartRateHistory = new TreeMap<>();
     private NavigableMap<LocalDateTime, Double> speedHistory = new TreeMap<>();
+    private NavigableMap<LocalDateTime, Activity> activityHistory = new TreeMap<>();
 
-    private Integer currentHeartRate;
-    private Double currentSpeed;
 
     private static final String NAME_NOT_SET = "NAME NOT SET";
 
@@ -60,5 +61,16 @@ public class Athlete {
             return null;
         }
         return speedHistory.lastEntry().getValue();
+    }
+    public void setCurrentActivity(Activity activity, LocalDateTime time){
+        this.activityHistory.put(time, activity);
+    }
+
+    public Activity getCurrentActivity(){
+        if(activityHistory.isEmpty()){
+            Log.i(TAG, "trying to access to activity info for empty set for the athlete ID: '" + this.athleteID + "'");
+            return null;
+        }
+        return activityHistory.lastEntry().getValue();
     }
 }

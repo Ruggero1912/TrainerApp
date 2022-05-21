@@ -1,16 +1,21 @@
 package it.dii.unipi.trainerapp.ui;
 
 import android.content.Context;
+import android.graphics.drawable.AnimationDrawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 import java.util.ArrayList;
 import it.dii.unipi.trainerapp.R;
 import it.dii.unipi.trainerapp.athlete.Athlete;
+import it.dii.unipi.trainerapp.utilities.Activity;
 
 public class AthleteAdapter extends ArrayAdapter<Athlete> {
+    private static String TAG = AthleteAdapter.class.getSimpleName();
 
     public AthleteAdapter(Context context, ArrayList<Athlete> athletes) {
         super(context, 0, athletes);
@@ -20,7 +25,9 @@ public class AthleteAdapter extends ArrayAdapter<Athlete> {
     public View getView(int position, View convertView, ViewGroup parent) {
 
         // Check if an existing view is being reused, otherwise inflate the view
+        boolean isNew = false;
         if (convertView == null) {
+            isNew = true;
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.athlete_item, parent, false);
         }
 
@@ -28,11 +35,64 @@ public class AthleteAdapter extends ArrayAdapter<Athlete> {
         Athlete a = getItem(position);
 
         // Lookup view for data population
-        //TextView tvID = (TextView) convertView.findViewById(R.id.tvID);
+
+        Activity currentActivity = a.getCurrentActivity();
+        Integer activityIcon = -1;
+        if(currentActivity == null){
+            Log.v(TAG, "currentActivity is not set for the athlete " + a.getAthleteID() + " using default");
+            currentActivity = Activity.DEFAULT_ACTIVITY;
+        }
+        switch (currentActivity){
+            case RUNNING:
+                activityIcon = R.drawable.ic_run_24;
+                break;
+            case WALKING:
+                activityIcon = R.drawable.ic_walk_24;
+                break;
+            case STANDING:
+                activityIcon = R.drawable.ic_standing_24;
+                break;
+            default:
+                Log.w(TAG, "activity not recognised, assigning default icon");
+                activityIcon = R.drawable.ic_standing_24;
+        }
+        ImageView athleteIcon = (ImageView) convertView.findViewById(R.id.imgIcon);
+        athleteIcon.setImageResource(activityIcon);
+
+
         TextView tvName = (TextView) convertView.findViewById(R.id.tvName);
         // Populate the data into the template view using the data object
-        //tvID.setText(a.getAthleteID().toString());
         tvName.setText(a.getName());
+
+        TextView tvID = (TextView) convertView.findViewById(R.id.tvID);
+        tvID.setText(a.getAthleteID().toString());
+
+        Double lastSpeedMeasure = a.getLastSpeedMeasurement();
+        String lastSpeedMeasureString = "";
+        if(lastSpeedMeasure == null){
+            lastSpeedMeasureString = "NA km/h";
+        }else{
+            lastSpeedMeasureString = lastSpeedMeasure.toString() + " km/h";
+        }
+
+        TextView tvSpeed = (TextView) convertView.findViewById(R.id.tvSpeed);
+        tvSpeed.setText(lastSpeedMeasureString);
+
+        TextView heartRate = (TextView) convertView.findViewById(R.id.tvHeartRate);
+        Integer lastHRMeasure = a.getLastHeartRateMeasurement();
+        String lastHRMString = null;
+        if(lastHRMeasure == null){
+            lastHRMString = "NA";
+        }else{
+            lastHRMString = Integer.toString(lastHRMeasure);
+        }
+        heartRate.setText(lastHRMString);
+        heartRate.setBackgroundResource(R.drawable.heart_rate_animation_drawable);
+        AnimationDrawable frameAnimation = (AnimationDrawable) heartRate.getBackground();
+        if(isNew)
+            frameAnimation.start();
+        //https://developer.android.com/reference/android/graphics/drawable/AnimationDrawable
+
         // Return the completed view to render on screen
         return convertView;
     }

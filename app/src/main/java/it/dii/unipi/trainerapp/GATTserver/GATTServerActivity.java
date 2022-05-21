@@ -492,6 +492,15 @@ public class GATTServerActivity extends AppCompatActivity {
             if(AthleteProfile.ATHLETE_NAME_CHARACTERISTIC.equals(characteristic.getUuid())) {
                 String athleteNameString = new String(value, StandardCharsets.UTF_8);
                 athletesManager.setName(new DeviceID(device).toString(), athleteNameString);//AthleteProfile.setAthleteName(device.getAddress(), value);
+                Athlete a = athletesManager.getAthlete(new DeviceID(device).toString());
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        if(adapter.getPosition(a)<0) {
+                            adapter.add(a);
+                            adapter.notifyDataSetChanged();
+                        }
+                    }
+                });
                 if(responseNeeded) {
                     mBluetoothGattServer.sendResponse(device,
                             requestId,

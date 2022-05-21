@@ -27,6 +27,7 @@
         <activity
             android:name=".ui.SettingsActivity"
             android:exported="false" />
+        <service android:name=".GATTserver.GATTServerActivity"/>
         <activity
             android:name=".MainActivity"
             android:exported="true">

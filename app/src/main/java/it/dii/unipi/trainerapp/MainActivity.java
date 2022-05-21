@@ -20,6 +20,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.util.ArrayList;
@@ -30,7 +31,7 @@ import it.dii.unipi.trainerapp.ui.AthleteAdapter;
 import it.dii.unipi.trainerapp.ui.SettingsActivity;
 import it.dii.unipi.trainerapp.utilities.Utility;
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private boolean settingsInizialized = false;
@@ -97,7 +98,7 @@ public class MainActivity extends Activity {
 
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter("update-athlete-list"));
-    }
+
 
         //firstly checks whether the trainer name has already been set
         trainerName = Utility.readFromFile(this, fileName);

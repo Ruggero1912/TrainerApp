@@ -48,7 +48,7 @@ public class Athlete implements Serializable {
     }
     public Integer getLastHeartRateMeasurement(){
         if(heartRateHistory.isEmpty()){
-            Log.i(TAG, "trying to access to heart rate measure for empty set for the athlete ID: '" + this.athleteID + "'");
+            Log.v(TAG, "trying to access to heart rate measure for empty set for the athlete ID: '" + this.athleteID + "'");
             return null;
         }
         return heartRateHistory.lastEntry().getValue();
@@ -58,7 +58,7 @@ public class Athlete implements Serializable {
     }
     public Double getLastSpeedMeasurement(){
         if(speedHistory.isEmpty()){
-            Log.i(TAG, "trying to access to speed measure for empty set for the athlete ID: '" + this.athleteID + "'");
+            Log.v(TAG, "trying to access to speed measure for empty set for the athlete ID: '" + this.athleteID + "'");
             return null;
         }
         return speedHistory.lastEntry().getValue();
@@ -69,7 +69,7 @@ public class Athlete implements Serializable {
 
     public Activity getCurrentActivity(){
         if(activityHistory.isEmpty()){
-            Log.i(TAG, "trying to access to activity info for empty set for the athlete ID: '" + this.athleteID + "'");
+            Log.v(TAG, "trying to access to activity info for empty set for the athlete ID: '" + this.athleteID + "'");
             return null;
         }
         return activityHistory.lastEntry().getValue();

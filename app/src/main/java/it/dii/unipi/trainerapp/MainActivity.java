@@ -145,4 +145,15 @@ public class MainActivity extends AppCompatActivity {
         ListView listView = (ListView) findViewById(R.id.lvAthletes);
         listView.setAdapter(adapter);
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        Log.d(TAG, "MainActivity.onDestroy has been called");
+
+        Intent intent = new Intent(this, GATTServerActivity.class);
+        stopService(intent);
+
+    }
 }

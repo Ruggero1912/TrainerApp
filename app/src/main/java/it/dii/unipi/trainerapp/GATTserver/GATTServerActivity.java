@@ -28,6 +28,8 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.Parcel;
+import android.os.ParcelUuid;
 import android.os.Process;
 import android.util.Log;
 
@@ -45,6 +47,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import it.dii.unipi.trainerapp.GATTserver.profiles.athleteProfile.AthleteProfile;
+import it.dii.unipi.trainerapp.GATTserver.profiles.athleteProfile.services.athleteInformationService.AthleteInformationService;
 import it.dii.unipi.trainerapp.MainActivity;
 import it.dii.unipi.trainerapp.R;
 import it.dii.unipi.trainerapp.athlete.Athlete;
@@ -190,8 +193,7 @@ public class GATTServerActivity extends Service {
         } else {
             Log.d(TAG, "GATTServer Thread correctly killed");
         };
-
-        stopSelf();
+        super.onDestroy();
     }
 
     /**
@@ -335,9 +337,12 @@ public class GATTServerActivity extends Service {
                 .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM)
                 .build();
 
+
         AdvertiseData data = new AdvertiseData.Builder()
                 .setIncludeDeviceName(true)
                 .setIncludeTxPowerLevel(false)
+                //TODO: broadcast the trainer name and a right UUID that should be knwown by the client app
+                //.addServiceData(new ParcelUuid(AthleteInformationService.ATHLETE_INFORMATION_SERVICE), "trainerApp".getBytes(StandardCharsets.UTF_8))
                 //.addServiceUuid(new ParcelUuid(TimeProfile.TIME_SERVICE))
                 //FENOM: TODO: add service UUID here (ma vanno aggiunti gli UUID di tutti i service o solo di uno basta?)
                 .build();

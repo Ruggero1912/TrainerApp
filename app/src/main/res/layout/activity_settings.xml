@@ -4,39 +4,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.SettingsActivity">
+    tools:context=".utilities.SettingsActivity">
 
-    <TextView
-        android:id="@+id/trainerNameLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="30dp"
-        android:layout_marginBottom="46dp"
-        android:text="Trainer Name:"
-        android:textSize="24sp"
-        app:layout_constraintBottom_toTopOf="@+id/trainerNameInput"
-        app:layout_constraintEnd_toEndOf="@+id/trainerNameInput" />
-
-    <EditText
-        android:id="@+id/trainerNameInput"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="301dp"
-        android:ems="10"
-        android:inputType="textNoSuggestions"
-        android:minHeight="48dp"
-        android:text="Name"
+    <FrameLayout
+        android:id="@+id/settings_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <Button
-        android:id="@+id/settingsConfirm"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="47dp"
-        android:text="Confirm"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/trainerNameInput" />
+    </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 
 public final class Utility {
 
@@ -34,11 +35,24 @@ public final class Utility {
             else return null;
         }
         catch (FileNotFoundException e) {
-            Log.e("Utility Class", "File not found: " + e.toString());
+            Log.w("Utility Class", "File not found: " + e.toString());
         } catch (IOException e) {
-            Log.e("Utility Class", "Can not read file: " + e.toString());
+            Log.w("Utility Class", "Can not read file: " + e.toString());
         }
 
         return ret;
+    }
+
+    public static boolean writeToFile(String data, Context context, String fileName) {
+        try {
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput(fileName, Context.MODE_PRIVATE));
+            outputStreamWriter.write(data);
+            outputStreamWriter.close();
+            return true;
+        }
+        catch (IOException e) {
+            Log.e("Exception", "File write failed: " + e.toString());
+            return false;
+        }
     }
 }

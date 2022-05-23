@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <EditTextPreference
+        android:key="trainerName"
+        android:title="@string/trainer_name"
+        android:summary="type your name"
+        android:dialogTitle="Trainer's Name:"
+        android:dialogMessage="Type in your name so that your athletes can spot you"
+        android:inputType="text"
+        android:singleLine="true"
+        />
+
+    <SwitchPreferenceCompat
+        app:key="themeSwitch"
+        app:title="Application Dark Theme"
+        app:defaultValue="false"
+        app:iconSpaceReserved="false"/>
+
+</PreferenceScreen>

@@ -2,25 +2,26 @@ package it.dii.unipi.trainerapp;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.util.ArrayList;
@@ -29,25 +30,49 @@ import it.dii.unipi.trainerapp.GATTserver.GATTServerActivity;
 import it.dii.unipi.trainerapp.athlete.Athlete;
 import it.dii.unipi.trainerapp.athlete.IntentMessagesManager;
 import it.dii.unipi.trainerapp.ui.AthleteAdapter;
-import it.dii.unipi.trainerapp.ui.SettingsActivity;
+import it.dii.unipi.trainerapp.ui.WelcomeActivity;
+import it.dii.unipi.trainerapp.utilities.Preferences;
+import it.dii.unipi.trainerapp.utilities.SettingsActivity;
 import it.dii.unipi.trainerapp.utilities.Utility;
 
 public class MainActivity extends AppCompatActivity {
 
+    private final String TRAINER_NAME_KEY = "trainerName";
+    private final String ACTION_TO_PERFORM_KEY = "action-to-perform";
+    private final String INTENT_ACTION = "update-athlete-list";
+
     private static final String TAG = MainActivity.class.getSimpleName();
     private boolean settingsInizialized = false;
-    private ActivityResultLauncher<Intent> someActivityResultLauncher;
-    private String trainerName;
-    private String fileName = "settingsDump.txt";
-
+    private ActivityResultLauncher<Intent> welcomeActivityResultLauncher;
     public static AthleteAdapter adapter; //should be private
     public static  ArrayList<Athlete> arrayOfAthletes; //should be private
+    private String trainerNameFirstLaunch;
+    private String fileName = "settingsDump.txt";
+    private Preferences myPreferences;
+    private String insertedTrainerName;
+    private boolean darkThemeEnabled;
+    private TextView trainerName;
+
+    private SharedPreferences.OnSharedPreferenceChangeListener sharedPrefListener =
+        new SharedPreferences.OnSharedPreferenceChangeListener() {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+            //TRAINER NAME
+            insertedTrainerName = Preferences.getTrainerName();
+            updateTrainerName(insertedTrainerName);
+
+            //DARK THEME
+            darkThemeEnabled = Preferences.getDarkThemeValue();
+            updateDarkTheme(darkThemeEnabled);
+
+        }
+    };
 
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             // Get extra data included in the Intent
-            String action_to_perform = intent.getStringExtra("action-to-perform");
+            String action_to_perform = intent.getStringExtra(ACTION_TO_PERFORM_KEY);
             Log.i(TAG, "New athlete received from the service -> performing " + action_to_perform);
 
             switch (action_to_perform) {
@@ -83,8 +108,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        // Devices with a display should not go to sleep
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        myPreferences = Preferences.getPreferences(this);
+        trainerName = findViewById(R.id.welcomeLabel);
+        myPreferences.registerOnSharedPreferenceChangeListener(sharedPrefListener); // register for changes on preferences
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); // Devices with a display should not go to sleep
 
         //we need to start the GATTServer Service sending an Intent to it
         Intent intent = new Intent(this, GATTServerActivity.class);
@@ -93,44 +120,78 @@ public class MainActivity extends AppCompatActivity {
         initializeAthletesList();
 
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter("update-athlete-list"));
+                new IntentFilter(INTENT_ACTION));
 
 
         //firstly checks whether the trainer name has already been set
-        trainerName = Utility.readFromFile(this, fileName);
+        trainerNameFirstLaunch = Preferences.getTrainerName();
 
-        if(!trainerName.equals("")){
+        if(!trainerNameFirstLaunch.equals("Name not found")){
             settingsInizialized=true;
         }
 
         if(!settingsInizialized) {
-            someActivityResultLauncher = registerForActivityResult(
+            welcomeActivityResultLauncher = registerForActivityResult(
                     new ActivityResultContracts.StartActivityForResult(),
                     result -> {
                         if (result.getResultCode() == Activity.RESULT_OK) {
                             Intent data = result.getData();
-                            trainerName = data.getStringExtra("trainerName");
+                            trainerNameFirstLaunch = data.getStringExtra(TRAINER_NAME_KEY);
                             settingsInizialized = true;
-                            Toast.makeText(getApplicationContext(),"Settings saved successfully!", Toast.LENGTH_SHORT).show();
-                            TextView trainerNameLabel = (TextView) findViewById(R.id.welcomeLabel);
-                            trainerNameLabel.append(trainerName);
+                            Toast.makeText(getApplicationContext(),"Name saved successfully!", Toast.LENGTH_SHORT).show();
                         }
                     });
-            //send an intent to Settings Activity
-            openSomeActivityForResult();
+            //send an intent to Welcome Activity
+            openWelcomeActivityForResult();
         }
-    else {
-            TextView trainerNameLabel = (TextView) findViewById(R.id.welcomeLabel);
-            trainerNameLabel.append(trainerName);
+        else {
+            TextView trainerNameFirstLaunchLabel = (TextView) findViewById(R.id.welcomeLabel);
+            trainerNameFirstLaunchLabel.append(trainerNameFirstLaunch);
+        }
+
+        darkThemeEnabled = Preferences.getDarkThemeValue();
+        updateDarkTheme(darkThemeEnabled);
+    }
+
+    public void updateTrainerName(String name) {
+        trainerName.setText("Welcome "+name);
+    }
+
+    public void updateDarkTheme(boolean darkThemeEnabled) {
+        if (darkThemeEnabled){
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        }
+        else{
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         }
     }
 
-    public void openSomeActivityForResult() {
-        Intent intent = new Intent(this, SettingsActivity.class);
-        someActivityResultLauncher.launch(intent);
+    // function that automatically inflates the navbar on the top
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
     }
 
-    //TODO: this method should be moved somewhere else, waiting for GATTServer class to become a Service
+    // send an intent to start SettingsActivity that shows the preference list
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    public void openWelcomeActivityForResult() {
+        Intent intent = new Intent(this, WelcomeActivity.class);
+        welcomeActivityResultLauncher.launch(intent);
+    }
+
     public void initializeAthletesList() {
         Log.i(TAG, "initializeAthletesList()");
         // Construct the data source

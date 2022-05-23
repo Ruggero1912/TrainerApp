@@ -75,7 +75,11 @@ public class AthletesManager {
         athletes.put(athleteID.toString(), athlete);
         // send intent to the main activity to add the new connected athlete to the adapter,
         // that bridges for the ListView and let it updates the UI
-        messagesManager.sendMessage(athlete, IntentMessagesManager.ATHLETE_INTENT_ACTION_ADD_ATHLETE);
+        if(athlete.isInitialized()) {
+            messagesManager.sendMessage(athlete, IntentMessagesManager.ATHLETE_INTENT_ACTION_ADD_ATHLETE);
+        }else{
+            Log.v(TAG, "the athlete '" + athleteID.toString() + "' is currently not initialized, so will not broadcast its presence for now");
+        }
         return true;
     }
 
@@ -85,15 +89,21 @@ public class AthletesManager {
      * @return the removed athlete Object or null
      */
     public Athlete removeAthlete(DeviceID athleteID){
-        // andrebbe chiamato anche athletesAway.remove()
+        Athlete athleteToRemove = getAthlete(athleteID.toString());
+        if(athleteToRemove == null){
+            Log.w(TAG, "the athlete whose ID is '" + athleteID + "' was not found; could not remove it!");
+            return null;
+        }
+        athletesAway.remove(athleteToRemove);
+        //here we have to notify broadcast the deletion of the athlete
+        messagesManager.sendMessage(athleteToRemove, IntentMessagesManager.ATHLETE_INTENT_ACTION_REMOVE_ATHLETE);
         return athletes.remove(athleteID.toString());
-        //qui va fatta la sendMessage per notificare della rimozione dell'atleta
     }
 
     public Athlete markAthleteAsAway(String athleteID){
         Athlete athlete = getAthlete(athleteID);
         if(athlete == null){
-            Log.w(TAG, "athlete not found");
+            Log.w(TAG, "athlete not found! Could not mark it as away");
             return null;
         }
         LocalDateTime currentTime = null;
@@ -106,8 +116,10 @@ public class AthletesManager {
         athlete.updateLastSeen();
         athlete.updateConnectionStatus(Athlete.CONNECTION_STATUS.AWAY);
         athletesAway.put(athleteID, currentTime);
-        //TODO: instead of removing from UI the athlete that is away, it should only be notified an update and the UI should show a special icon decoration only
-        messagesManager.sendMessage(athlete, IntentMessagesManager.ATHLETE_INTENT_ACTION_REMOVE_ATHLETE);
+        //instead of removing from UI the athlete that is away,
+        // it should only be notified an update and the UI should show a special icon decoration only
+        // so we consider this an update to an athlete obj instead of remove action
+        messagesManager.sendMessage(athlete, IntentMessagesManager.ATHLETE_INTENT_ACTION_UPDATE_ATHLETE);
         return athlete;
     }
 
@@ -121,8 +133,9 @@ public class AthletesManager {
         athlete.updateLastSeen();
         athlete.updateConnectionStatus(Athlete.CONNECTION_STATUS.CONNECTED);
         athletesAway.remove(athleteID);
-        //TODO: if you change the management of the away status according to the upper todo, please update this sendMessage ACTION_TYPE
-        messagesManager.sendMessage(athlete, IntentMessagesManager.ATHLETE_INTENT_ACTION_ADD_ATHLETE);
+        //according to the upper specified management of the away status
+        // the markAsPresent is considered an update
+        messagesManager.sendMessage(athlete, IntentMessagesManager.ATHLETE_INTENT_ACTION_UPDATE_ATHLETE);
     }
 
     /**

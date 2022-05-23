@@ -2,7 +2,9 @@ package it.dii.unipi.trainerapp.utilities;
 
 import android.bluetooth.BluetoothDevice;
 
-public class DeviceID {
+import java.io.Serializable;
+
+public class DeviceID implements Serializable {
     public String ID;
 
     public DeviceID(BluetoothDevice device){

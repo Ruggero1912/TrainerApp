@@ -119,7 +119,9 @@ public class AthletesManager {
         //instead of removing from UI the athlete that is away,
         // it should only be notified an update and the UI should show a special icon decoration only
         // so we consider this an update to an athlete obj instead of remove action
-        messagesManager.sendMessage(athlete, IntentMessagesManager.ATHLETE_INTENT_ACTION_UPDATE_ATHLETE);
+        if(athlete.isInitialized()) {
+            messagesManager.sendMessage(athlete, IntentMessagesManager.ATHLETE_INTENT_ACTION_UPDATE_ATHLETE);
+        }
         return athlete;
     }
 

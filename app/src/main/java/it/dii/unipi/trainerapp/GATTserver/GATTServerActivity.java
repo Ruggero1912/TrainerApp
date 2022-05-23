@@ -109,6 +109,14 @@ public class GATTServerActivity extends Service {
         // Register for system Bluetooth events
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(mBluetoothReceiver, filter);
+
+        //here we have to initialize the context for the athletesManager, so that it will be able to broadcast the intent messages
+        if( ! this.athletesManager.isContextInitialized()){
+            this.athletesManager.initializeContext(getApplicationContext());
+        }else{
+            Log.d(TAG, "skipping the athletesManager context initialize since it is already initialized...");
+        }
+
         //questo receiver si occupa di gestire il caso in cui BluetoothAdapter.STATE cambia (ovvero quando si accende o spegne il bluetooth)
         // quando ciò succede, viene chiamata la mBluetoothReceiver callback corrispondente che si occupa di avviare advertising e server / stopparli
         if (!bluetoothAdapter.isEnabled()) {
@@ -471,10 +479,6 @@ public class GATTServerActivity extends Service {
 
                 if( !added ){
                     Log.d(TAG, "the device was not added since it is already present");
-                } else {
-                    // send intent to the main activity to add the new connected athlete to the adapter,
-                    // that bridges for the ListView and let it updates the UI
-                    sendMessage(newAthlete, "add-athlete");
                 }
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.i(TAG, "BluetoothDevice DISCONNECTED: " + device);
@@ -485,30 +489,8 @@ public class GATTServerActivity extends Service {
                     Log.e(TAG, "the just disconnected device did not correspond to an athlete | device: " + device);
                 }else{
                     Log.i(TAG, "the athlete '" + athleteMarkedAsAway.getName() + "' was marked as away");
-                    sendMessage(athleteMarkedAsAway, "remove-athlete");
                 }
             }
-        }
-
-        // Send an Intent with an action named "update-ahtlete-list", the Intent sent is
-        // received by the MainActivity.
-        private void sendMessage(Athlete newAthlete, String action_to_perform) {
-            Log.d("sender", "Broadcasting message");
-            Intent intent = new Intent("update-athlete-list");
-            // You can also include some extra data.
-            intent.putExtra("athlete", newAthlete);
-            intent.putExtra("action-to-perform", action_to_perform);
-            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
-        }
-
-        private void sendMessage(Athlete newAthlete, String action_to_perform, Athlete athlete_to_remove) {
-            Log.d("sender", "Broadcasting message");
-            Intent intent = new Intent("update-athlete-list");
-            // You can also include some extra data.
-            intent.putExtra("athlete", newAthlete);
-            intent.putExtra("action-to-perform", action_to_perform);
-            intent.putExtra("athlete-to-remove", athlete_to_remove);
-            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
         }
 
         @Override
@@ -525,7 +507,7 @@ public class GATTServerActivity extends Service {
                         requestId,
                         BluetoothGatt.GATT_SUCCESS,
                         0,
-                        athletesManager.getName(new DeviceID(device).toString()).getBytes(StandardCharsets.UTF_8)//AthleteProfile.getAthleteName(device)
+                        athletesManager.getName(new DeviceID(device).toString()).getBytes(StandardCharsets.UTF_8)
                 );
             }
             /*
@@ -568,14 +550,9 @@ public class GATTServerActivity extends Service {
                 return;
             }
             if(AthleteProfile.ATHLETE_NAME_CHARACTERISTIC.equals(characteristic.getUuid())) {
-                Athlete oldAthlete = athletesManager.getAthlete(new DeviceID(device).toString());
 
                 String athleteNameString = new String(value, StandardCharsets.UTF_8);
-                athletesManager.setName(new DeviceID(device).toString(), athleteNameString);//AthleteProfile.setAthleteName(device.getAddress(), value);
-
-                // send intent to the MainActivity to update the GUI
-                Athlete updatedAthlete = athletesManager.getAthlete(new DeviceID(device).toString());
-                sendMessage(updatedAthlete, "update-athlete", oldAthlete);
+                athletesManager.setName(new DeviceID(device).toString(), athleteNameString);
 
                 if(responseNeeded) {
                     mBluetoothGattServer.sendResponse(device,

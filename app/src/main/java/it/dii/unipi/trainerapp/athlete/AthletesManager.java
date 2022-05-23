@@ -137,7 +137,9 @@ public class AthletesManager {
         athletesAway.remove(athleteID);
         //according to the upper specified management of the away status
         // the markAsPresent is considered an update
-        messagesManager.sendMessage(athlete, IntentMessagesManager.ATHLETE_INTENT_ACTION_UPDATE_ATHLETE);
+        if(athlete.isInitialized()) {
+            messagesManager.sendMessage(athlete, IntentMessagesManager.ATHLETE_INTENT_ACTION_UPDATE_ATHLETE);
+        }
     }
 
     /**

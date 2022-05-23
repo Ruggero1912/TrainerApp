@@ -43,6 +43,9 @@ public class AthletesManager {
             return false;
         }
         Athlete athlete = new Athlete(athleteID);
+        athlete.updateFirstConnection();
+        athlete.updateLastSeen();
+        athlete.updateConnectionStatus(Athlete.CONNECTION_STATUS.CONNECTED);
         athletes.put(athleteID.toString(), athlete);
         return true;
     }
@@ -70,6 +73,8 @@ public class AthletesManager {
             Log.e(TAG, "cannot log the localdatetime of the athlete vacancy!");
             //currentTime = (new Time(Time.getCurrentTimezone()));
         }
+        athlete.updateLastSeen();
+        athlete.updateConnectionStatus(Athlete.CONNECTION_STATUS.AWAY);
         athletesAway.put(athleteID, currentTime);
         return athlete;
     }
@@ -81,6 +86,8 @@ public class AthletesManager {
             return;
         }
         Log.i(TAG, "the athlete " + athlete.getAthleteID() + " (friendly name: " + athlete.getName() + ") has come back, removing from athletesAway list");
+        athlete.updateLastSeen();
+        athlete.updateConnectionStatus(Athlete.CONNECTION_STATUS.CONNECTED);
         athletesAway.remove(athleteID);
     }
 
@@ -100,6 +107,7 @@ public class AthletesManager {
             return false;
         }
         a.setName(newName);
+        a.updateLastSeen();
         return true;
     }
 
@@ -120,6 +128,7 @@ public class AthletesManager {
             return false;
         }
         a.storeHeartRateMeasurement(heartRateMeasure, time);
+        a.updateLastSeen();
         return true;
     }
 

@@ -16,6 +16,9 @@ public class Athlete implements Serializable {
 
     private DeviceID athleteID;
     private String name;
+    private LocalDateTime firstConnection;
+    private LocalDateTime lastSeen;
+    private CONNECTION_STATUS currentConnectionStatus;
     private NavigableMap<LocalDateTime, Integer> heartRateHistory = new TreeMap<>();
     private NavigableMap<LocalDateTime, Double> speedHistory = new TreeMap<>();
     private NavigableMap<LocalDateTime, Activity> activityHistory = new TreeMap<>();
@@ -23,8 +26,62 @@ public class Athlete implements Serializable {
 
     private static final String NAME_NOT_SET = "NAME NOT SET";
 
+    public enum CONNECTION_STATUS{
+        CONNECTED,
+        AWAY;
+    }
+
     public Athlete(DeviceID athleteID){
         this.athleteID = athleteID;
+    }
+
+    public boolean updateFirstConnection(){
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            this.firstConnection = LocalDateTime.now();
+            return true;
+        }else{
+            Log.e(TAG, "cannot log the LocalDateTime of the first connection!");
+            return false;
+        }
+    }
+
+    public LocalDateTime getFirstConnection(){
+        return this.firstConnection;
+    }
+
+    public boolean updateLastSeen(){
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            this.lastSeen = LocalDateTime.now();
+            return true;
+        }else{
+            Log.e(TAG, "cannot log the LocalDateTime of the last seen!");
+            return false;
+        }
+    }
+
+    public LocalDateTime getLastSeen(){
+        return this.lastSeen;
+    }
+
+    public void updateConnectionStatus(CONNECTION_STATUS connectionStatus){
+        this.currentConnectionStatus = connectionStatus;
+    }
+
+    public CONNECTION_STATUS getConnectionStatus(){
+        return this.currentConnectionStatus;
+    }
+
+    /**
+     * checks if the athlete has stored some information or if is empty
+     * in this latter case it is not considered as valid
+     *      (it could be a third device connected to the current device's GATT server that has nothing toi do with the app)
+     * @return true if isInitialized, else false
+     */
+    public boolean isInitialized(){
+        if(this.getName() != null){
+            return true;
+        }
+        return false;
     }
 
     public DeviceID getAthleteID(){

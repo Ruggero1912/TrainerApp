@@ -27,6 +27,7 @@ import java.util.ArrayList;
 
 import it.dii.unipi.trainerapp.GATTserver.GATTServerActivity;
 import it.dii.unipi.trainerapp.athlete.Athlete;
+import it.dii.unipi.trainerapp.athlete.IntentMessagesManager;
 import it.dii.unipi.trainerapp.ui.AthleteAdapter;
 import it.dii.unipi.trainerapp.ui.SettingsActivity;
 import it.dii.unipi.trainerapp.utilities.Utility;
@@ -50,31 +51,25 @@ public class MainActivity extends AppCompatActivity {
             Log.i(TAG, "New athlete received from the service -> performing " + action_to_perform);
 
             switch (action_to_perform) {
-                case "add-athlete":
-                    Athlete newAthlete = (Athlete) intent.getSerializableExtra("athlete");
-                    Log.i(TAG, "Adding athlete: " + newAthlete.getName()
-                            + ", position: " + adapter.getPosition(newAthlete));
-                    if(adapter.getPosition(newAthlete)<0) {
-                        adapter.add(newAthlete);
+                case IntentMessagesManager
+                        .ATHLETE_INTENT_ACTION_ADD_OR_UPDATE_ATHLETE:
+                    Athlete receivedAthlete = (Athlete) intent.getSerializableExtra(IntentMessagesManager.ATHLETE_INTENT_ATHLETE_OBJ_KEY);
+                    if(adapter.getPosition(receivedAthlete)<0) {
+                        adapter.add(receivedAthlete);
+                        adapter.notifyDataSetChanged();
+                        Log.i(TAG, "Adding athlete: " + receivedAthlete.getName()
+                                + ", position: " + adapter.getPosition(receivedAthlete));
+                    }
+                    else{
+                        int athleteIndex = adapter.getPosition(receivedAthlete);
+                        Log.i(TAG, "Updating athlete: " + receivedAthlete.getName()
+                                + ", position: " + athleteIndex);
+                        arrayOfAthletes.set(athleteIndex, receivedAthlete);
                         adapter.notifyDataSetChanged();
                     }
-                    for(int i=0 ; i<adapter.getCount() ; i++){
-                        Athlete obj = (Athlete) adapter.getItem(i);
-                        Log.d(TAG, "Adapter item " + i + ": " + obj.getName());
-                    }
                     break;
-                case "update-athlete":
-                    Athlete updatedAthlete = (Athlete) intent.getSerializableExtra("athlete");
-                    //TODO: fix me, I am a bit ugly
-                    Athlete target_athlete = updatedAthlete;//(Athlete) intent.getSerializableExtra("athlete-to-remove");
-                    Log.i(TAG, "Updating athlete: " + updatedAthlete.getName()
-                            + ", position: " + adapter.getPosition(updatedAthlete));
-                    adapter.remove(target_athlete);
-                    adapter.add(updatedAthlete);
-                    adapter.notifyDataSetChanged();
-                    break;
-                case "remove-athlete":
-                    Athlete athleteMarkedAsAway = (Athlete) intent.getSerializableExtra("athlete");
+                case IntentMessagesManager.ATHLETE_INTENT_ACTION_REMOVE_ATHLETE:
+                    Athlete athleteMarkedAsAway = (Athlete) intent.getSerializableExtra(IntentMessagesManager.ATHLETE_INTENT_ATHLETE_OBJ_KEY);
                     Log.i(TAG, "removing athlete: " + athleteMarkedAsAway.getName()
                             + ", position: " + adapter.getPosition(athleteMarkedAsAway));
                     adapter.remove(athleteMarkedAsAway);

@@ -10,8 +10,9 @@ public class IntentMessagesManager {
 
     public static final String ATHLETE_INTENT_NAME = "update-athlete-list";
     public static final String ATHLETE_INTENT_ACTION_TYPE_KEY = "action-to-perform";
-    public static final String ATHLETE_INTENT_ACTION_ADD_ATHLETE = "add-athlete";
-    public static final String ATHLETE_INTENT_ACTION_UPDATE_ATHLETE = "update-athlete";
+    public static final String ATHLETE_INTENT_ACTION_ADD_OR_UPDATE_ATHLETE = "add-or-update-athlete";
+    public static final String ATHLETE_INTENT_ACTION_ADD_ATHLETE = ATHLETE_INTENT_ACTION_ADD_OR_UPDATE_ATHLETE;//"add-athlete";
+    public static final String ATHLETE_INTENT_ACTION_UPDATE_ATHLETE = ATHLETE_INTENT_ACTION_ADD_OR_UPDATE_ATHLETE;//"update-athlete";
     public static final String ATHLETE_INTENT_ACTION_REMOVE_ATHLETE = "remove-athlete";
     public static final String ATHLETE_INTENT_ATHLETE_OBJ_KEY = "athlete";
 

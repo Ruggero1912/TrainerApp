@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,6 +31,7 @@ import it.dii.unipi.trainerapp.GATTserver.GATTServerActivity;
 import it.dii.unipi.trainerapp.athlete.Athlete;
 import it.dii.unipi.trainerapp.athlete.IntentMessagesManager;
 import it.dii.unipi.trainerapp.ui.AthleteAdapter;
+import it.dii.unipi.trainerapp.ui.AthleteDetailsActivity;
 import it.dii.unipi.trainerapp.ui.WelcomeActivity;
 import it.dii.unipi.trainerapp.utilities.Preferences;
 import it.dii.unipi.trainerapp.utilities.SettingsActivity;
@@ -201,6 +203,17 @@ public class MainActivity extends AppCompatActivity {
         // Attach the adapter to a ListView
         ListView listView = (ListView) findViewById(R.id.lvAthletes);
         listView.setAdapter(adapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Intent intent = new Intent(getApplicationContext(), AthleteDetailsActivity.class);
+                Bundle b = new Bundle();
+                b.putSerializable(AthleteDetailsActivity.ATHLETE_OBJ_KEY, arrayOfAthletes.get(i));
+                intent.putExtras(b);
+                Log.d(TAG, "starting the activity athleteDetailsActivity using an intent and passed the athlete '" + arrayOfAthletes.get(i).getName() + "' to it whose index is " + i);
+                startActivity(intent);
+            }
+        });
     }
 
     @Override

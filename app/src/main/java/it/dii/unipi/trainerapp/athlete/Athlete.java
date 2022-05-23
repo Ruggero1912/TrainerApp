@@ -78,7 +78,7 @@ public class Athlete implements Serializable {
      * @return true if isInitialized, else false
      */
     public boolean isInitialized(){
-        if(this.getName() != null){
+        if(this.name != null){
             return true;
         }
         return false;

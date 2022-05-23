@@ -117,7 +117,7 @@ public class AthleteAdapter extends ArrayAdapter<Athlete> {
         heartRate.setText(lastHRMString);
         heartRate.setBackgroundResource(R.drawable.heart_rate_animation_drawable);
         AnimationDrawable frameAnimation = (AnimationDrawable) heartRate.getBackground();
-        if(isNew)
+        if(isNew || (! frameAnimation.isRunning() && a.getConnectionStatus() == Athlete.CONNECTION_STATUS.CONNECTED))
             frameAnimation.start();
         //https://developer.android.com/reference/android/graphics/drawable/AnimationDrawable
 

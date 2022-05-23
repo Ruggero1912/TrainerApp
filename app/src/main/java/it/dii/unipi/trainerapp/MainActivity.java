@@ -65,7 +65,8 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case "update-athlete":
                     Athlete updatedAthlete = (Athlete) intent.getSerializableExtra("athlete");
-                    Athlete target_athlete = (Athlete) intent.getSerializableExtra("athlete-to-remove");
+                    //TODO: fix me, I am a bit ugly
+                    Athlete target_athlete = updatedAthlete;//(Athlete) intent.getSerializableExtra("athlete-to-remove");
                     Log.i(TAG, "Updating athlete: " + updatedAthlete.getName()
                             + ", position: " + adapter.getPosition(updatedAthlete));
                     adapter.remove(target_athlete);

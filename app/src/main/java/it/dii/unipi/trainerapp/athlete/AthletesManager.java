@@ -1,5 +1,6 @@
 package it.dii.unipi.trainerapp.athlete;
 
+import android.content.Context;
 import android.text.format.Time;
 import android.util.Log;
 
@@ -12,6 +13,10 @@ import it.dii.unipi.trainerapp.utilities.DeviceID;
 /**
  * this is a singleton class thread safe.
  * Please use the public method getInstance in order to obtain the singleton instance of the class
+ *
+ * this class is responsible for managing the athletes' infos and updates received from the athletes' devices.
+ *
+ * Every time an update should be broadcasted and communicated to other app's component, this class raises an intent.
  */
 
 public class AthletesManager {
@@ -31,6 +36,27 @@ public class AthletesManager {
 
     private NavigableMap<String, LocalDateTime> athletesAway = new TreeMap<>();
 
+    private Context context;
+    private IntentMessagesManager messagesManager;
+
+    public void initializeContext(Context c){
+        if( this.isContextInitialized() ){
+            Log.w(TAG, "the context has already been initialized");
+            return;
+        }
+        this.context = c;
+        this.messagesManager = new IntentMessagesManager(this.context);
+        Log.d(TAG, "initialized IntentMessagesManager with the given context");
+    }
+
+    /**
+     * use this to check whether the AthletesManager has the context set or not
+     * @return true if is initialized
+     */
+    public boolean isContextInitialized(){
+        return this.context != null;
+    }
+
     /**
      * adds a new athlete identified by an ID to the athletes list
      * @param athleteID the ID of the athlete that has to be added
@@ -47,6 +73,9 @@ public class AthletesManager {
         athlete.updateLastSeen();
         athlete.updateConnectionStatus(Athlete.CONNECTION_STATUS.CONNECTED);
         athletes.put(athleteID.toString(), athlete);
+        // send intent to the main activity to add the new connected athlete to the adapter,
+        // that bridges for the ListView and let it updates the UI
+        messagesManager.sendMessage(athlete, IntentMessagesManager.ATHLETE_INTENT_ACTION_ADD_ATHLETE);
         return true;
     }
 
@@ -58,6 +87,7 @@ public class AthletesManager {
     public Athlete removeAthlete(DeviceID athleteID){
         // andrebbe chiamato anche athletesAway.remove()
         return athletes.remove(athleteID.toString());
+        //qui va fatta la sendMessage per notificare della rimozione dell'atleta
     }
 
     public Athlete markAthleteAsAway(String athleteID){
@@ -76,6 +106,8 @@ public class AthletesManager {
         athlete.updateLastSeen();
         athlete.updateConnectionStatus(Athlete.CONNECTION_STATUS.AWAY);
         athletesAway.put(athleteID, currentTime);
+        //TODO: instead of removing from UI the athlete that is away, it should only be notified an update and the UI should show a special icon decoration only
+        messagesManager.sendMessage(athlete, IntentMessagesManager.ATHLETE_INTENT_ACTION_REMOVE_ATHLETE);
         return athlete;
     }
 
@@ -89,6 +121,8 @@ public class AthletesManager {
         athlete.updateLastSeen();
         athlete.updateConnectionStatus(Athlete.CONNECTION_STATUS.CONNECTED);
         athletesAway.remove(athleteID);
+        //TODO: if you change the management of the away status according to the upper todo, please update this sendMessage ACTION_TYPE
+        messagesManager.sendMessage(athlete, IntentMessagesManager.ATHLETE_INTENT_ACTION_ADD_ATHLETE);
     }
 
     /**
@@ -108,6 +142,7 @@ public class AthletesManager {
         }
         a.setName(newName);
         a.updateLastSeen();
+        messagesManager.sendMessage(a, IntentMessagesManager.ATHLETE_INTENT_ACTION_UPDATE_ATHLETE);
         return true;
     }
 
@@ -129,6 +164,7 @@ public class AthletesManager {
         }
         a.storeHeartRateMeasurement(heartRateMeasure, time);
         a.updateLastSeen();
+        messagesManager.sendMessage(a, IntentMessagesManager.ATHLETE_INTENT_ACTION_UPDATE_ATHLETE);
         return true;
     }
 

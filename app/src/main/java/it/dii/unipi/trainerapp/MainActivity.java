@@ -129,9 +129,39 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void openSomeActivityForResult() {
-        Intent intent = new Intent(this, SettingsActivity.class);
-        someActivityResultLauncher.launch(intent);
+    public void updateDarkTheme(boolean darkThemeEnabled) {
+        if (darkThemeEnabled){
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        }
+        else{
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
+    }
+
+    // function that automatically inflates the navbar on the top
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    // send an intent to start SettingsActivity that shows the preference list
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    public void openWelcomeActivityForResult() {
+        Intent intent = new Intent(this, WelcomeActivity.class);
+        welcomeActivityResultLauncher.launch(intent);
     }
 
     //TODO: this method should be moved somewhere else, waiting for GATTServer class to become a Service

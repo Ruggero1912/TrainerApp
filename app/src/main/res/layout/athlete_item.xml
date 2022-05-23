@@ -44,6 +44,14 @@
                 android:paddingHorizontal="15dp"
                 android:textSize="8dp"
                 android:textStyle="italic"/>
+            <TextView
+                android:id="@+id/tvLastSeen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="last seen"
+                android:paddingHorizontal="15dp"
+                android:textSize="8dp"
+                android:textStyle="bold"/>
         </LinearLayout>
     </LinearLayout>
     <View

@@ -2,6 +2,7 @@ package it.dii.unipi.trainerapp.ui;
 
 import android.content.Context;
 import android.graphics.drawable.AnimationDrawable;
+import android.os.Build;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +10,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import it.dii.unipi.trainerapp.R;
 import it.dii.unipi.trainerapp.athlete.Athlete;
@@ -52,6 +55,7 @@ public class AthleteAdapter extends ArrayAdapter<Athlete> {
             Log.v(TAG, "currentActivity is not set for the athlete " + a.getAthleteID() + " using default");
             currentActivity = Activity.DEFAULT_ACTIVITY;
         }
+        //note that the icon is set to the current activity or, if the athlete is away, to the away icon
         switch (currentActivity){
             case RUNNING:
                 activityIcon = R.drawable.ic_run_24;
@@ -66,6 +70,10 @@ public class AthleteAdapter extends ArrayAdapter<Athlete> {
                 Log.w(TAG, "activity not recognised, assigning default icon");
                 activityIcon = R.drawable.ic_standing_24;
         }
+        if(a.getConnectionStatus() == Athlete.CONNECTION_STATUS.AWAY){
+            Log.v(TAG, "the athlete is away, will show the away icon instead of the activity icon");
+            activityIcon = R.drawable.ic_signal_off_24;
+        }
         ImageView athleteIcon = (ImageView) convertView.findViewById(R.id.imgIcon);
         athleteIcon.setImageResource(activityIcon);
 
@@ -76,6 +84,16 @@ public class AthleteAdapter extends ArrayAdapter<Athlete> {
 
         TextView tvID = (TextView) convertView.findViewById(R.id.tvID);
         tvID.setText(a.getAthleteID().toString());
+
+        TextView tvLastSeen = (TextView) convertView.findViewById(R.id.tvLastSeen);
+        String lastSeenString = "last seen: ";
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            lastSeenString += a.getLastSeen().toLocalTime().truncatedTo(ChronoUnit.SECONDS).toString();
+        }
+        else{
+            lastSeenString += "NA";
+        }
+        tvLastSeen.setText(lastSeenString);
 
         Double lastSpeedMeasure = a.getLastSpeedMeasurement();
         String lastSpeedMeasureString = "";

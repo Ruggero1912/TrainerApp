@@ -24,6 +24,9 @@ public class AthleteAdapter extends ArrayAdapter<Athlete> {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
+        // Get the data item for this position
+        Athlete a = getItem(position);
+
         // Check if an existing view is being reused, otherwise inflate the view
         boolean isNew = false;
         if (convertView == null) {
@@ -31,8 +34,15 @@ public class AthleteAdapter extends ArrayAdapter<Athlete> {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.athlete_item, parent, false);
         }
 
-        // Get the data item for this position
-        Athlete a = getItem(position);
+
+        if( ! a.isInitialized() ){
+            Log.d(TAG, "skipping the device '" + a.getAthleteID() + "' since it is not initialized");
+            convertView.setVisibility(View.INVISIBLE);
+            return convertView;
+        }else{
+            Log.v(TAG, "going to create or update a view for the given athlete " + a.getAthleteID());
+            convertView.setVisibility(View.VISIBLE);
+        }
 
         // Lookup view for data population
 

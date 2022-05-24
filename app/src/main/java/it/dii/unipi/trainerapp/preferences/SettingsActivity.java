@@ -1,4 +1,4 @@
-package it.dii.unipi.trainerapp.utilities;
+package it.dii.unipi.trainerapp.preferences;
 
 import android.os.Bundle;
 
@@ -15,7 +15,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.settings_container, new it.dii.unipi.trainerapp.utilities.SettingsFragment())
+                .replace(R.id.settings_container, new SettingsFragment())
                 .commit();
     }
 }

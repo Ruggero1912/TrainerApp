@@ -31,7 +31,7 @@
             android:name=".ui.WelcomeActivity"
             android:exported="false" />
         <activity
-            android:name=".utilities.SettingsActivity"
+            android:name=".preferences.SettingsActivity"
             android:exported="false" />
 
         <service android:name=".GATTserver.GATTServerActivity" />

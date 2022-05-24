@@ -1,4 +1,4 @@
-package it.dii.unipi.trainerapp.utilities;
+package it.dii.unipi.trainerapp.preferences;
 
 import android.os.Bundle;
 import androidx.preference.PreferenceFragmentCompat;

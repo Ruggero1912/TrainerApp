@@ -3,22 +3,16 @@ package it.dii.unipi.trainerapp.ui;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.util.prefs.PreferenceChangeEvent;
 
 import it.dii.unipi.trainerapp.R;
-import it.dii.unipi.trainerapp.utilities.Preferences;
+import it.dii.unipi.trainerapp.preferences.Preferences;
 
 public class WelcomeActivity extends AppCompatActivity {
 

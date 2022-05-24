@@ -33,9 +33,8 @@ import it.dii.unipi.trainerapp.athlete.IntentMessagesManager;
 import it.dii.unipi.trainerapp.ui.AthleteAdapter;
 import it.dii.unipi.trainerapp.ui.AthleteDetailsActivity;
 import it.dii.unipi.trainerapp.ui.WelcomeActivity;
-import it.dii.unipi.trainerapp.utilities.Preferences;
-import it.dii.unipi.trainerapp.utilities.SettingsActivity;
-import it.dii.unipi.trainerapp.utilities.Utility;
+import it.dii.unipi.trainerapp.preferences.Preferences;
+import it.dii.unipi.trainerapp.preferences.SettingsActivity;
 
 public class MainActivity extends AppCompatActivity {
 

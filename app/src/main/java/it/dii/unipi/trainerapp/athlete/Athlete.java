@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
-import it.dii.unipi.trainerapp.utilities.Activity;
+import it.dii.unipi.trainerapp.utilities.AthleteActivityType;
 import it.dii.unipi.trainerapp.utilities.DeviceID;
 
 public class Athlete implements Serializable {
@@ -21,7 +21,7 @@ public class Athlete implements Serializable {
     private CONNECTION_STATUS currentConnectionStatus;
     private NavigableMap<LocalDateTime, Integer> heartRateHistory = new TreeMap<>();
     private NavigableMap<LocalDateTime, Double> speedHistory = new TreeMap<>();
-    private NavigableMap<LocalDateTime, Activity> activityHistory = new TreeMap<>();
+    private NavigableMap<LocalDateTime, AthleteActivityType> activityHistory = new TreeMap<>();
 
 
     private static final String NAME_NOT_SET = "NAME NOT SET";
@@ -120,11 +120,11 @@ public class Athlete implements Serializable {
         }
         return speedHistory.lastEntry().getValue();
     }
-    public void setCurrentActivity(Activity activity, LocalDateTime time){
-        this.activityHistory.put(time, activity);
+    public void setCurrentActivity(AthleteActivityType athleteActivityType, LocalDateTime time){
+        this.activityHistory.put(time, athleteActivityType);
     }
 
-    public Activity getCurrentActivity(){
+    public AthleteActivityType getCurrentActivity(){
         if(activityHistory.isEmpty()){
             Log.v(TAG, "trying to access to activity info for empty set for the athlete ID: '" + this.athleteID + "'");
             return null;

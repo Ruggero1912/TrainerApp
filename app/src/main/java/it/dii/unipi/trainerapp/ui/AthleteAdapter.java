@@ -15,7 +15,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import it.dii.unipi.trainerapp.R;
 import it.dii.unipi.trainerapp.athlete.Athlete;
-import it.dii.unipi.trainerapp.utilities.Activity;
+import it.dii.unipi.trainerapp.utilities.AthleteActivityType;
 
 public class AthleteAdapter extends ArrayAdapter<Athlete> {
     private static String TAG = AthleteAdapter.class.getSimpleName();
@@ -49,14 +49,14 @@ public class AthleteAdapter extends ArrayAdapter<Athlete> {
 
         // Lookup view for data population
 
-        Activity currentActivity = a.getCurrentActivity();
+        AthleteActivityType currentAthleteActivityType = a.getCurrentActivity();
         Integer activityIcon = -1;
-        if(currentActivity == null){
+        if(currentAthleteActivityType == null){
             Log.v(TAG, "currentActivity is not set for the athlete " + a.getAthleteID() + " using default");
-            currentActivity = Activity.DEFAULT_ACTIVITY;
+            currentAthleteActivityType = AthleteActivityType.defaultAthleteActivityType;
         }
         //note that the icon is set to the current activity or, if the athlete is away, to the away icon
-        switch (currentActivity){
+        switch (currentAthleteActivityType){
             case RUNNING:
                 activityIcon = R.drawable.ic_run_24;
                 break;

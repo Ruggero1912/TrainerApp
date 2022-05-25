@@ -38,7 +38,7 @@ import java.util.NavigableMap;
 import it.dii.unipi.trainerapp.R;
 import it.dii.unipi.trainerapp.athlete.Athlete;
 import it.dii.unipi.trainerapp.athlete.IntentMessagesManager;
-import it.dii.unipi.trainerapp.utilities.Activity;
+import it.dii.unipi.trainerapp.utilities.AthleteActivityType;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -122,13 +122,13 @@ public class AthleteDetailsFragment extends Fragment {
         TextView tvName = fragmentView.findViewById(R.id.detailsFragmentAthleteName);
         tvName.setText(boundedAthlete.getName());
 
-        Activity currentActivity = boundedAthlete.getCurrentActivity();
+        AthleteActivityType currentAthleteActivityType = boundedAthlete.getCurrentActivity();
         Integer activityIcon = -1;
-        if(currentActivity == null){
+        if(currentAthleteActivityType == null){
             Log.v(TAG, "currentActivity is not set for the athlete " + boundedAthlete.getAthleteID() + " using default");
-            currentActivity = Activity.DEFAULT_ACTIVITY;
+            currentAthleteActivityType = AthleteActivityType.defaultAthleteActivityType;
         }
-        switch (currentActivity){
+        switch (currentAthleteActivityType){
             case RUNNING:
                 activityIcon = R.drawable.ic_run_24;
                 break;

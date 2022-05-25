@@ -351,7 +351,7 @@ public class GATTServerActivity extends Service {
                 .setIncludeTxPowerLevel(false)
                 //TODO: broadcast the trainer name and a right UUID that should be knwown by the client app
                 //.addServiceData(new ParcelUuid(AthleteInformationService.ATHLETE_INFORMATION_SERVICE), "trainerApp".getBytes(StandardCharsets.UTF_8))
-                //.addServiceUuid(new ParcelUuid(TimeProfile.TIME_SERVICE))
+                .addServiceUuid(new ParcelUuid(AthleteInformationService.ATHLETE_INFORMATION_SERVICE))
                 //FENOM: TODO: add service UUID here (ma vanno aggiunti gli UUID di tutti i service o solo di uno basta?)
                 .build();
 
@@ -393,6 +393,7 @@ public class GATTServerActivity extends Service {
         //mBluetoothGattServer.addService(TimeProfile.createTimeService());
         //FENOM: TODO: add here the other services
         mBluetoothGattServer.addService(AthleteProfile.getAthleteInformationService());
+        mBluetoothGattServer.addService(AthleteProfile.getHeartRateService());
 
     }
 
@@ -563,7 +564,29 @@ public class GATTServerActivity extends Service {
                 }else {
                     Log.v(TAG, "skipping response");
                 }
-            }else {
+            }else if(AthleteProfile.HEART_RATE_CHARACTERISTIC.equals(characteristic.getUuid())){
+                //TODO: the received value could directly be an encoded integer and not a string, parse it in the right way and test it
+                String athleteHRString = new String(value, StandardCharsets.UTF_8);
+                Integer hrParsed = null;
+                try{
+
+                    Integer.parseInt(athleteHRString);
+                } catch (Exception e){
+                    Log.e(TAG, "the given hr measurement was not recognised as valid Integer!");
+                }
+                athletesManager.storeHeartRateMeasurementForAthlete(new DeviceID(device).toString(), hrParsed);
+
+                if(responseNeeded) {
+                    mBluetoothGattServer.sendResponse(device,
+                            requestId,
+                            BluetoothGatt.GATT_SUCCESS,
+                            0,
+                            "saved".getBytes(StandardCharsets.UTF_8));
+                }else {
+                    Log.v(TAG, "skipping response");
+                }
+            }
+            else {
                 // Invalid characteristic
                 Log.w(TAG, "Invalid Characteristic Write: " + characteristic.getUuid());
 

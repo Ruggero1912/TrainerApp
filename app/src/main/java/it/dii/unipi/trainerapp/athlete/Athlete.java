@@ -24,6 +24,8 @@ public class Athlete implements Serializable {
     private NavigableMap<LocalDateTime, Integer> heartRateHistory = new TreeMap<>();
     private NavigableMap<LocalDateTime, Double> speedHistory = new TreeMap<>();
     private NavigableMap<LocalDateTime, AthleteActivityType> activityHistory = new TreeMap<>();
+    private NavigableMap<LocalDateTime, Integer> stepCounterHistory = new TreeMap<>();
+    private NavigableMap<LocalDateTime, Double> peaceHistory = new TreeMap<>();
 
 
     private static final String NAME_NOT_SET = "NAME NOT SET";
@@ -105,15 +107,24 @@ public class Athlete implements Serializable {
     public void storeHeartRateMeasurement(Integer heartRateMeasurement, LocalDateTime time){
         heartRateHistory.put(time, heartRateMeasurement);
     }
+    public void storeSpeedMeasurement(Double currentSpeed, LocalDateTime time){
+        speedHistory.put(time, currentSpeed);
+    }
+    public void storeRecognizedActivity(AthleteActivityType activity, LocalDateTime time){
+        activityHistory.put(time, activity);
+    }
+    public void storeStepCounterMeasurement(Integer stepCount, LocalDateTime time){
+        stepCounterHistory.put(time, stepCount);
+    }
+    public void storePeaceMeasurement(Double currentPeace, LocalDateTime time){
+        peaceHistory.put(time, currentPeace);
+    }
     public Integer getLastHeartRateMeasurement(){
         if(heartRateHistory.isEmpty()){
             LogAccessingEmptyResource(TAG, "trying to access to heart rate measure for empty set for the athlete ID: '" + this.athleteID + "'");
             return null;
         }
         return heartRateHistory.lastEntry().getValue();
-    }
-    public void storeSpeedMeasurement(Double currentSpeed, LocalDateTime time){
-        speedHistory.put(time, currentSpeed);
     }
     public Double getLastSpeedMeasurement(){
         if(speedHistory.isEmpty()){

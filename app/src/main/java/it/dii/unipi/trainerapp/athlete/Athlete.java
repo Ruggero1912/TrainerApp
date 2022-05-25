@@ -13,6 +13,8 @@ import it.dii.unipi.trainerapp.utilities.DeviceID;
 public class Athlete implements Serializable {
     private static final String TAG = Athlete.class.getSimpleName();
 
+    private static final boolean SHOULD_LOG_EMPTY_ACCESSES = false;
+
 
     private DeviceID athleteID;
     private String name;
@@ -105,7 +107,7 @@ public class Athlete implements Serializable {
     }
     public Integer getLastHeartRateMeasurement(){
         if(heartRateHistory.isEmpty()){
-            Log.v(TAG, "trying to access to heart rate measure for empty set for the athlete ID: '" + this.athleteID + "'");
+            LogAccessingEmptyResource(TAG, "trying to access to heart rate measure for empty set for the athlete ID: '" + this.athleteID + "'");
             return null;
         }
         return heartRateHistory.lastEntry().getValue();
@@ -115,7 +117,7 @@ public class Athlete implements Serializable {
     }
     public Double getLastSpeedMeasurement(){
         if(speedHistory.isEmpty()){
-            Log.v(TAG, "trying to access to speed measure for empty set for the athlete ID: '" + this.athleteID + "'");
+            LogAccessingEmptyResource(TAG, "trying to access to speed measure for empty set for the athlete ID: '" + this.athleteID + "'");
             return null;
         }
         return speedHistory.lastEntry().getValue();
@@ -126,7 +128,7 @@ public class Athlete implements Serializable {
 
     public AthleteActivityType getCurrentActivity(){
         if(activityHistory.isEmpty()){
-            Log.v(TAG, "trying to access to activity info for empty set for the athlete ID: '" + this.athleteID + "'");
+            LogAccessingEmptyResource(TAG, "trying to access to activity info for empty set for the athlete ID: '" + this.athleteID + "'");
             return null;
         }
         return activityHistory.lastEntry().getValue();
@@ -134,15 +136,21 @@ public class Athlete implements Serializable {
 
     public NavigableMap<LocalDateTime, Integer> getHeartRateHistory(){
         if(heartRateHistory.isEmpty()){
-            Log.v(TAG, "trying to access to heart rate info for empty set for the athlete ID: '" + this.athleteID + "'");
+            LogAccessingEmptyResource(TAG, "trying to access to heart rate info for empty set for the athlete ID: '" + this.athleteID + "'");
         }
         return heartRateHistory;
     }
 
     public NavigableMap<LocalDateTime, Double> getSpeedHistory(){
         if(speedHistory.isEmpty()){
-            Log.v(TAG, "trying to access to speed history for empty set for the athlete ID: '" + this.athleteID + "'");
+            LogAccessingEmptyResource(TAG, "trying to access to speed history for empty set for the athlete ID: '" + this.athleteID + "'");
         }
         return speedHistory;
+    }
+
+    private void LogAccessingEmptyResource(String TAG, String logRow){
+        if(SHOULD_LOG_EMPTY_ACCESSES){
+            Log.v(TAG, logRow);
+        }
     }
 }

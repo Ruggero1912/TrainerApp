@@ -81,13 +81,14 @@ public class MainActivity extends AppCompatActivity {
                         .ATHLETE_INTENT_ACTION_ADD_OR_UPDATE_ATHLETE:
                     Athlete receivedAthlete = (Athlete) intent.getSerializableExtra(IntentMessagesManager.ATHLETE_INTENT_ATHLETE_OBJ_KEY);
                     if(adapter.getPosition(receivedAthlete)<0) {
-                        adapter.add(receivedAthlete);
+                        arrayOfAthletes.add(receivedAthlete);
+                        //adapter.add(receivedAthlete);
                         adapter.notifyDataSetChanged();
                         Log.i(TAG, "Adding athlete: " + receivedAthlete.getName()
                                 + ", position: " + adapter.getPosition(receivedAthlete));
                     }
                     else{
-                        int athleteIndex = adapter.getPosition(receivedAthlete);
+                        int athleteIndex = arrayOfAthletes.indexOf(receivedAthlete);
                         Log.i(TAG, "Updating athlete: " + receivedAthlete.getName()
                                 + ", position: " + athleteIndex);
                         arrayOfAthletes.set(athleteIndex, receivedAthlete);

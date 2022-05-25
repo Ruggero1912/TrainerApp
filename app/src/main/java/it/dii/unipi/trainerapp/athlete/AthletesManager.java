@@ -181,6 +181,7 @@ public class AthletesManager {
         }
         a.storeHeartRateMeasurement(heartRateMeasure, time);
         a.updateLastSeen();
+        Log.v(TAG, "stored new HR measure for the athlete " + a.getAthleteID() + " HR value: " + heartRateMeasure);
         messagesManager.sendMessage(a, IntentMessagesManager.ATHLETE_INTENT_ACTION_UPDATE_ATHLETE);
         return true;
     }

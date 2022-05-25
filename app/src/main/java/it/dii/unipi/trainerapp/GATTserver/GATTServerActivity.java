@@ -2,6 +2,7 @@ package it.dii.unipi.trainerapp.GATTserver;
 
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -10,6 +11,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattServer;
 import android.bluetooth.BluetoothGattServerCallback;
+import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.AdvertiseCallback;
@@ -41,9 +43,11 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import it.dii.unipi.trainerapp.GATTserver.profiles.athleteProfile.AthleteProfile;
@@ -392,9 +396,32 @@ public class GATTServerActivity extends Service {
 
         //mBluetoothGattServer.addService(TimeProfile.createTimeService());
         //FENOM: TODO: add here the other services
-        mBluetoothGattServer.addService(AthleteProfile.getAthleteInformationService());
-        mBluetoothGattServer.addService(AthleteProfile.getHeartRateService());
+        this.addServiceToQueueOfPendingServices(AthleteProfile.getAthleteInformationService());
+        this.addServiceToQueueOfPendingServices(AthleteProfile.getHeartRateService());
 
+    }
+
+    private List<BluetoothGattService> pendingGATTServices = new ArrayList<>();
+    private boolean isAddingAService = false;
+
+    /**
+     * call this method to add another service to the list of available services of this GATT Server
+     * if you directly call gattServer.addService, it will be a mess
+     * @param newPendingService
+     */
+    @SuppressLint("MissingPermission")
+    private void addServiceToQueueOfPendingServices(BluetoothGattService newPendingService){
+        if(mBluetoothGattServer == null){
+            Log.e(TAG, "cannot add pending service since the mBluetoothGATTServer was not initialized!!");
+            return;
+        }
+        if( ! isAddingAService){
+            mBluetoothGattServer.addService(newPendingService);
+            isAddingAService = true;
+        }
+        else{
+            pendingGATTServices.add(newPendingService);
+        }
     }
 
     /**
@@ -468,6 +495,24 @@ public class GATTServerActivity extends Service {
      * All read/write requests for characteristics and descriptors are handled here.
      */
     private BluetoothGattServerCallback mGattServerCallback = new BluetoothGattServerCallback() {
+
+        @SuppressLint("MissingPermission")
+        @Override
+        public void onServiceAdded(int status, BluetoothGattService service) {
+            super.onServiceAdded(status, service);
+
+            Log.v(TAG, "The service " + service.getUuid().toString() + " was correctly added");
+
+            if( ! pendingGATTServices.isEmpty()){
+                BluetoothGattService toBeAdded = pendingGATTServices.remove(0);
+                Log.v(TAG, "Going to add the pending service " + toBeAdded.getUuid().toString());
+                mBluetoothGattServer.addService(toBeAdded);
+            }
+            else{
+                Log.v(TAG, "all the services were added correctly");
+                isAddingAService = false;
+            }
+        }
 
         @Override
         @SuppressWarnings("MissingPermission")
@@ -550,6 +595,8 @@ public class GATTServerActivity extends Service {
                 Log.e(TAG, "cannot handle characteristicWriteRequest because missing permissions");
                 return;
             }
+            Log.v(TAG, "received charWrite on the characteristic : " + characteristic.getUuid().toString());
+
             if(AthleteProfile.ATHLETE_NAME_CHARACTERISTIC.equals(characteristic.getUuid())) {
 
                 String athleteNameString = new String(value, StandardCharsets.UTF_8);
@@ -566,6 +613,12 @@ public class GATTServerActivity extends Service {
                 }
             }else if(AthleteProfile.HEART_RATE_CHARACTERISTIC.equals(characteristic.getUuid())){
                 //TODO: the received value could directly be an encoded integer and not a string, parse it in the right way and test it
+                int receivedHR = new BigInteger(value).intValue();
+
+                if(receivedHR > 200 || receivedHR < 0){
+                    Log.w(TAG, "the received HR is out of bounds! received value converted as int: " + receivedHR + " | raw data: " + value);
+                }
+                /*
                 String athleteHRString = new String(value, StandardCharsets.UTF_8);
                 Integer hrParsed = null;
                 try{
@@ -574,7 +627,8 @@ public class GATTServerActivity extends Service {
                 } catch (Exception e){
                     Log.e(TAG, "the given hr measurement was not recognised as valid Integer!");
                 }
-                athletesManager.storeHeartRateMeasurementForAthlete(new DeviceID(device).toString(), hrParsed);
+                 */
+                athletesManager.storeHeartRateMeasurementForAthlete(new DeviceID(device).toString(), receivedHR);
 
                 if(responseNeeded) {
                     mBluetoothGattServer.sendResponse(device,

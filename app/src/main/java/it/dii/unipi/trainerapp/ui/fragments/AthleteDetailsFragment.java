@@ -100,13 +100,13 @@ public class AthleteDetailsFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_athlete_details, container, false);
 
-        TextView tvAthleteName = view.findViewById(R.id.detailsFragmentAthleteName);
+        this.fragmentView = view;
 
         updateUI();
 
         LocalBroadcastManager.getInstance(ctx).registerReceiver(mMessageReceiver, new IntentFilter(ATHLETE_INTENT_NAME));
         //ctx.registerReceiver(mMessageReceiver, new IntentFilter(ATHLETE_INTENT_NAME));
-        this.fragmentView = view;
+
         return view;
     }
 

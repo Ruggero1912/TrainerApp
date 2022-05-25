@@ -135,7 +135,6 @@ public class Athlete implements Serializable {
     public NavigableMap<LocalDateTime, Integer> getHeartRateHistory(){
         if(heartRateHistory.isEmpty()){
             Log.v(TAG, "trying to access to heart rate info for empty set for the athlete ID: '" + this.athleteID + "'");
-            return null;
         }
         return heartRateHistory;
     }
@@ -143,7 +142,6 @@ public class Athlete implements Serializable {
     public NavigableMap<LocalDateTime, Double> getSpeedHistory(){
         if(speedHistory.isEmpty()){
             Log.v(TAG, "trying to access to speed history for empty set for the athlete ID: '" + this.athleteID + "'");
-            return null;
         }
         return speedHistory;
     }

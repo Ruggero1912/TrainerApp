@@ -4,7 +4,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.fragments.AthleteDetailsFragment">
-
+    <ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -27,39 +30,43 @@
             android:layout_width="61dp"
             android:layout_height="55dp"
             android:layout_marginTop="50dp"
-            android:background="@drawable/ic_speed_24" />
+            android:src="@drawable/ic_speed_24" />
 
+        <TextView
+            android:id="@+id/detailsFragmentAthleteConnectionStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="20dp"
+            android:text="connection status" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:orientation="horizontal"
-            android:padding="40px">
+            android:padding="20dp">
 
             <TextView
                 android:id="@+id/detailsFragmentID"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingHorizontal="30dp"
+                android:paddingHorizontal="20dp"
                 android:text="ID"
                 android:textStyle="italic" />
-
-            <TextView
-                android:id="@+id/detailsFragmentAthleteConnectionStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="connection status" />
 
             <TextView
                 android:id="@+id/detailsFragmentAthleteLastSeen"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingHorizontal="30dp"
+                android:paddingHorizontal="20dp"
                 android:text="last seen"
                 android:textStyle="bold" />
         </LinearLayout>
-
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:padding="20dp">
         <TextView
             android:id="@+id/detailsFragmentSpeed"
             android:layout_width="wrap_content"
@@ -76,6 +83,7 @@
             android:drawableLeft="@drawable/ic_outline_security_24"
             android:drawablePadding="10dp"
             android:text="HR" />
+    </LinearLayout>
 
         <com.androidplot.xy.XYPlot
             android:id="@+id/plotHeartRate"
@@ -91,10 +99,7 @@
             android:layout_height="189dp"
             android:title="@string/speed_series" />
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
     </LinearLayout>
+    </ScrollView>
 
 </FrameLayout>

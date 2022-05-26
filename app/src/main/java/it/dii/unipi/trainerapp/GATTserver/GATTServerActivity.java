@@ -39,6 +39,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.widget.Toast;
 
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -49,6 +50,8 @@ import it.dii.unipi.trainerapp.GATTserver.profiles.athleteProfile.AthleteProfile
 import it.dii.unipi.trainerapp.GATTserver.profiles.athleteProfile.services.athleteInformationService.AthleteInformationService;
 import it.dii.unipi.trainerapp.athlete.Athlete;
 import it.dii.unipi.trainerapp.athlete.AthletesManager;
+import it.dii.unipi.trainerapp.ui.AthleteAdapter;
+import it.dii.unipi.trainerapp.utilities.AthleteActivityType;
 import it.dii.unipi.trainerapp.utilities.DeviceID;
 import it.dii.unipi.trainerapp.utilities.ServiceStatus;
 
@@ -572,6 +575,78 @@ public class GATTServerActivity extends Service {
                 }
                  */
                 athletesManager.storeHeartRateMeasurementForAthlete(new DeviceID(device).toString(), receivedHR);
+
+                if(responseNeeded) {
+                    mBluetoothGattServer.sendResponse(device,
+                            requestId,
+                            BluetoothGatt.GATT_SUCCESS,
+                            0,
+                            "saved".getBytes(StandardCharsets.UTF_8));
+                }else {
+                    Log.v(TAG, "skipping response");
+                }
+            }else if(AthleteProfile.SPEED_CHARACTERISTIC.equals(characteristic.getUuid())){
+                double receivedSpeed = ByteBuffer.wrap(value).getDouble();
+
+                if(receivedSpeed > 37 || receivedSpeed < 0){
+                    Log.w(TAG, "the received speed is out of bounds! received value converted as double: " + receivedSpeed + " | raw data: " + value);
+                }
+
+                athletesManager.storeSpeedMeasurementForAthlete(new DeviceID(device).toString(), receivedSpeed);
+
+                if(responseNeeded) {
+                    mBluetoothGattServer.sendResponse(device,
+                            requestId,
+                            BluetoothGatt.GATT_SUCCESS,
+                            0,
+                            "saved".getBytes(StandardCharsets.UTF_8));
+                }else {
+                    Log.v(TAG, "skipping response");
+                }
+            }else if(AthleteProfile.RECOGNIZED_ACTIVITY_CHARACTERISTIC.equals(characteristic.getUuid())){
+                int activityIndex = new BigInteger(value).intValue();
+                AthleteActivityType activity = AthleteActivityType.fromInt(activityIndex);
+
+                if(activity.toString().equals("")){
+                    Log.w(TAG, "the received activity is empty! received value converted as string: " + activity + " | raw data: " + value);
+                }
+
+                athletesManager.storeNewActivityForAthlete(new DeviceID(device).toString(), activity);
+
+                if(responseNeeded) {
+                    mBluetoothGattServer.sendResponse(device,
+                            requestId,
+                            BluetoothGatt.GATT_SUCCESS,
+                            0,
+                            "saved".getBytes(StandardCharsets.UTF_8));
+                }else {
+                    Log.v(TAG, "skipping response");
+                }
+            }else if(AthleteProfile.STEP_COUNTER_CHARACTERISTIC.equals(characteristic.getUuid())){
+                int receivedStepCount = new BigInteger(value).intValue();
+
+                if(receivedStepCount < 0){
+                    Log.w(TAG, "the received step count is negative! received value converted as int: " + receivedStepCount + " | raw data: " + value);
+                }
+                athletesManager.storeStepCountForAthlete(new DeviceID(device).toString(), receivedStepCount);
+
+                if(responseNeeded) {
+                    mBluetoothGattServer.sendResponse(device,
+                            requestId,
+                            BluetoothGatt.GATT_SUCCESS,
+                            0,
+                            "saved".getBytes(StandardCharsets.UTF_8));
+                }else {
+                    Log.v(TAG, "skipping response");
+                }
+            }else if(AthleteProfile.PEACE_CHARACTERISTIC.equals(characteristic.getUuid())){
+                double receivedPeace = ByteBuffer.wrap(value).getDouble();
+
+                if(receivedPeace > 2.5 || receivedPeace < 0){
+                    Log.w(TAG, "the received peace is out of bounds! received value converted as double: " + receivedPeace + " | raw data: " + value);
+                }
+
+                athletesManager.storePeaceMeasurementForAthlete(new DeviceID(device).toString(), receivedPeace);
 
                 if(responseNeeded) {
                     mBluetoothGattServer.sendResponse(device,

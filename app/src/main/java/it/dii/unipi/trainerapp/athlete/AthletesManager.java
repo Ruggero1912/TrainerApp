@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
+import it.dii.unipi.trainerapp.utilities.AthleteActivityType;
 import it.dii.unipi.trainerapp.utilities.DeviceID;
 
 /**
@@ -204,5 +205,97 @@ public class AthletesManager {
             return null;
         }
         return a.getLastHeartRateMeasurement();
+    }
+
+    public boolean storeSpeedMeasurementForAthlete(String athleteID, double registeredSpeed, LocalDateTime time){
+        Athlete a = getAthlete(athleteID);
+        if(a == null){
+            Log.e(TAG, "athlete not found for the ID '" + athleteID + "'! cannot store the measurement '" + registeredSpeed + "'..");
+            return false;
+        }
+        a.storeSpeedMeasurement(registeredSpeed, time);
+        a.updateLastSeen();
+        Log.v(TAG, "stored new speed measure for the athlete " + a.getAthleteID() + " speed value: " + registeredSpeed);
+        messagesManager.sendMessage(a, IntentMessagesManager.ATHLETE_INTENT_ACTION_UPDATE_ATHLETE);
+        return true;
+    }
+
+    public boolean storeSpeedMeasurementForAthlete(String athleteID, double registeredSpeed){
+        LocalDateTime currentTime = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            currentTime = LocalDateTime.now();
+        }else{
+            Log.e(TAG, "cannot log the localdatetime of the speed measure!");
+        }
+        return storeSpeedMeasurementForAthlete(athleteID, registeredSpeed, currentTime);
+    }
+
+    public boolean storeNewActivityForAthlete(String athleteID, AthleteActivityType activity, LocalDateTime time){
+        Athlete a = getAthlete(athleteID);
+        if(a == null){
+            Log.e(TAG, "athlete not found for the ID '" + athleteID + "'! cannot store the activity '" + activity.toString() + "'..");
+            return false;
+        }
+        a.storeRecognizedActivity(activity, time);
+        a.updateLastSeen();
+        Log.v(TAG, "stored new activity for the athlete " + a.getAthleteID() + " activity: " + activity.toString());
+        messagesManager.sendMessage(a, IntentMessagesManager.ATHLETE_INTENT_ACTION_UPDATE_ATHLETE);
+        return true;
+    }
+
+    public boolean storeNewActivityForAthlete(String athleteID, AthleteActivityType activity){
+        LocalDateTime currentTime = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            currentTime = LocalDateTime.now();
+        }else{
+            Log.e(TAG, "cannot log the localdatetime of the recognized activity!");
+        }
+        return storeNewActivityForAthlete(athleteID, activity, currentTime);
+    }
+
+    public boolean storeStepCountForAthlete(String athleteID, Integer stepCount, LocalDateTime time){
+        Athlete a = getAthlete(athleteID);
+        if(a == null){
+            Log.e(TAG, "athlete not found for the ID '" + athleteID + "'! cannot store the step count '" + stepCount.toString() + "'..");
+            return false;
+        }
+        a.storeStepCounterMeasurement(stepCount, time);
+        a.updateLastSeen();
+        Log.v(TAG, "stored new step count for the athlete " + a.getAthleteID() + " step count: " + stepCount.toString());
+        messagesManager.sendMessage(a, IntentMessagesManager.ATHLETE_INTENT_ACTION_UPDATE_ATHLETE);
+        return true;
+    }
+
+    public boolean storeStepCountForAthlete(String athleteID, Integer stepCount){
+        LocalDateTime currentTime = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            currentTime = LocalDateTime.now();
+        }else{
+            Log.e(TAG, "cannot log the localdatetime of the new step count!");
+        }
+        return storeStepCountForAthlete(athleteID, stepCount, currentTime);
+    }
+
+    public boolean storePeaceMeasurementForAthlete(String athleteID, double registeredPeace, LocalDateTime time){
+        Athlete a = getAthlete(athleteID);
+        if(a == null){
+            Log.e(TAG, "athlete not found for the ID '" + athleteID + "'! cannot store the peace measurement '" + registeredPeace + "'..");
+            return false;
+        }
+        a.storePeaceMeasurement(registeredPeace, time);
+        a.updateLastSeen();
+        Log.v(TAG, "stored new peace measure for the athlete " + a.getAthleteID() + " peace value: " + registeredPeace);
+        messagesManager.sendMessage(a, IntentMessagesManager.ATHLETE_INTENT_ACTION_UPDATE_ATHLETE);
+        return true;
+    }
+
+    public boolean storePeaceMeasurementForAthlete(String athleteID, double registeredPeace){
+        LocalDateTime currentTime = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            currentTime = LocalDateTime.now();
+        }else{
+            Log.e(TAG, "cannot log the localdatetime of the peace measure!");
+        }
+        return storePeaceMeasurementForAthlete(athleteID, registeredPeace, currentTime);
     }
 }

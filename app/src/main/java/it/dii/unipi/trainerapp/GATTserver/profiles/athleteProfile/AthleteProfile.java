@@ -15,12 +15,17 @@ import java.util.UUID;
 
 import it.dii.unipi.trainerapp.GATTserver.profiles.athleteProfile.services.athleteInformationService.AthleteInformationService;
 import it.dii.unipi.trainerapp.GATTserver.profiles.athleteProfile.services.heartRateService.HeartRateService;
+import it.dii.unipi.trainerapp.GATTserver.profiles.athleteProfile.services.movementServices.MovementService;
 
 public class AthleteProfile {
 
     private static final String TAG = AthleteProfile.class.getSimpleName();
     public static UUID ATHLETE_NAME_CHARACTERISTIC = AthleteInformationService.ATHLETE_NAME_CHARACTERISTIC;
     public static UUID HEART_RATE_CHARACTERISTIC = HeartRateService.HEART_RATE_CHARACTERISTIC;
+    public static UUID SPEED_CHARACTERISTIC = MovementService.SPEED_CHARACTERISTIC;
+    public static UUID RECOGNIZED_ACTIVITY_CHARACTERISTIC = MovementService.RECOGNIZED_ACTIVITY_CHARACTERISTIC;
+    public static UUID PEACE_CHARACTERISTIC = MovementService.PEACE_CHARACTERISTIC;
+    public static UUID STEP_COUNTER_CHARACTERISTIC = MovementService.STEP_COUNTER_CHARACTERISTIC;
 
 
     public static BluetoothGattService getAthleteInformationService() {
@@ -29,6 +34,10 @@ public class AthleteProfile {
 
     public static BluetoothGattService getHeartRateService() {
         return HeartRateService.createHeartRateService();
+    }
+
+    public static BluetoothGattService getMovementService() {
+        return MovementService.createMovementService();
     }
 
 }

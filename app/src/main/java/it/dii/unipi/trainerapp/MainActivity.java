@@ -35,6 +35,7 @@ import it.dii.unipi.trainerapp.ui.AthleteDetailsActivity;
 import it.dii.unipi.trainerapp.ui.WelcomeActivity;
 import it.dii.unipi.trainerapp.preferences.Preferences;
 import it.dii.unipi.trainerapp.preferences.SettingsActivity;
+import it.dii.unipi.trainerapp.utilities.ServiceStatus;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -116,8 +117,7 @@ public class MainActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); // Devices with a display should not go to sleep
 
         //we need to start the GATTServer Service sending an Intent to it
-        Intent intent = new Intent(this, GATTServerActivity.class);
-        startService(intent);
+        startGATTServerService();
 
         initializeAthletesList();
 
@@ -217,13 +217,78 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        Log.v(TAG, "onPause method has been called on MainActivity");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.v(TAG, "I am onResume, going to call startGATTServerService");
+        startGATTServerService();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
 
         Log.d(TAG, "MainActivity.onDestroy has been called");
 
-        Intent intent = new Intent(this, GATTServerActivity.class);
-        stopService(intent);
+        stopGATTServerService();
 
     }
+
+    private ServiceStatus GATTServerServiceStatus = ServiceStatus.TERMINATED;
+
+    private boolean pendingStartServiceCommandGATTServer = false;
+
+    /**
+     * to start the GATTServer Service sending an Intent to it
+     */
+    private void startGATTServerService(){
+
+        if(isGATTServerStatusReceiverRegistered == false) {
+            LocalBroadcastManager.getInstance(this).registerReceiver(GATTServerStatusBroadcastReceiver,
+                    new IntentFilter(GATTServerActivity.GATT_SERVER_STATUS_ACTION));
+            isGATTServerStatusReceiverRegistered = true;
+            Log.v(TAG, "just registered intentReceiver for GATTServerStatus");
+        }else{
+            Log.v(TAG, "will not register intentReceiver for GATTServerStatus since it is already registered");
+        }
+
+        if(GATTServerServiceStatus != ServiceStatus.RUNNING) {
+            if( ! pendingStartServiceCommandGATTServer) {
+                Log.v(TAG, "startGATTServerService: going to send a startService Intent to GATTServer");
+                Intent intent = new Intent(this, GATTServerActivity.class);
+                startService(intent);
+                pendingStartServiceCommandGATTServer = true;
+            }else {
+                Log.d(TAG, "since there is already a pending start service command, will not broadcast startService for GATTServerService again");
+            }
+        }else{
+            Log.d(TAG, "startGATTServerService not going to send a startService intent since the server is already running");
+        }
+    }
+
+    private void stopGATTServerService(){
+        Log.v(TAG, "stopGATTServerService: going to send a stopService Intent to GATTServer");
+        Intent intent = new Intent(this, GATTServerActivity.class);
+        stopService(intent);
+    }
+
+    private boolean isGATTServerStatusReceiverRegistered = false;
+
+    private BroadcastReceiver GATTServerStatusBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            ServiceStatus newStatus = (ServiceStatus) intent.getSerializableExtra(GATTServerActivity.SERVICE_STATUS_KEY);
+            GATTServerServiceStatus = newStatus;
+            Log.d(TAG, "received a new state for the GATTServerService; now it is: " + GATTServerServiceStatus.name());
+            if(newStatus == ServiceStatus.RUNNING){
+                //Log.d(TAG, "");
+                pendingStartServiceCommandGATTServer = false;
+            }
+        }
+    };
 }

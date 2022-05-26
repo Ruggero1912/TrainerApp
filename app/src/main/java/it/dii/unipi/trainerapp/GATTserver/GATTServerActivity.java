@@ -24,23 +24,18 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.os.Parcel;
 import android.os.ParcelUuid;
 import android.os.Process;
 import android.util.Log;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import android.widget.ListView;
 import android.widget.Toast;
 
 import java.math.BigInteger;
@@ -52,12 +47,10 @@ import java.util.Set;
 
 import it.dii.unipi.trainerapp.GATTserver.profiles.athleteProfile.AthleteProfile;
 import it.dii.unipi.trainerapp.GATTserver.profiles.athleteProfile.services.athleteInformationService.AthleteInformationService;
-import it.dii.unipi.trainerapp.MainActivity;
-import it.dii.unipi.trainerapp.R;
 import it.dii.unipi.trainerapp.athlete.Athlete;
 import it.dii.unipi.trainerapp.athlete.AthletesManager;
-import it.dii.unipi.trainerapp.ui.AthleteAdapter;
 import it.dii.unipi.trainerapp.utilities.DeviceID;
+import it.dii.unipi.trainerapp.utilities.ServiceStatus;
 
 public class GATTServerActivity extends Service {
     private static final String TAG = GATTServerActivity.class.getSimpleName();
@@ -140,29 +133,24 @@ public class GATTServerActivity extends Service {
             // separate thread because the service normally runs in the process's
             // main thread, which we don't want to block. We also make it
             // background priority so CPU-intensive work doesn't disrupt our UI.
-
+            //FENOM: is THREAD_PRIORITY_BACKGROUND the best priority choice?
+            // Maybe the server should have an higher priority to handle all the GATT requests fastly
             thread = new HandlerThread("ServiceStartArguments",
-                    Process.THREAD_PRIORITY_BACKGROUND);
+                    Process.THREAD_PRIORITY_MORE_FAVORABLE);    //THREAD_PRIORITY_BACKGROUND
             thread.start();
 
             // Get the HandlerThread's Looper and use it for our Handler
             serviceLooper = thread.getLooper();
             serviceHandler = new ServiceHandler(serviceLooper);
         }
+
+        Log.v(TAG, "GATTServerService.onStartCommand: notifying broadcast message for new Service status: RUNNING");
+        broadcastStatusUpdate(ServiceStatus.RUNNING);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         //super.onStart();
-
-        /*
-        // Register for system clock events
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_TIME_TICK);
-        filter.addAction(Intent.ACTION_TIME_CHANGED);
-        filter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
-        registerReceiver(mTimeReceiver, filter);
-         */
 
         // For each start request, send a message to start a job and deliver the
         // start ID so we know which request we're stopping when we finish the job
@@ -170,7 +158,7 @@ public class GATTServerActivity extends Service {
         msg.arg1 = startId;
         serviceHandler.sendMessage(msg);
 
-        return START_NOT_STICKY; // decide which policy is the best fit for the Service
+        return START_STICKY; // decide which policy is the best fit for the Service
     }
 
     @Override
@@ -178,13 +166,6 @@ public class GATTServerActivity extends Service {
         // We don't provide binding, so return null
         return null;
     }
-
-    // onStop is not needed because the Service is independent from the Activity
-    /*@Override
-    protected void onStop() {
-        super.onStop();
-        //unregisterReceiver(mTimeReceiver);
-    }*/
 
     @Override
     public void onDestroy() {
@@ -196,6 +177,10 @@ public class GATTServerActivity extends Service {
         }
 
         unregisterReceiver(mBluetoothReceiver);
+
+        Log.v(TAG, "executing onDestroy method: sending broadcast notification for new status TERMINATED");
+
+        broadcastStatusUpdate(ServiceStatus.TERMINATED);
 
         Log.d(TAG, "Going to call thread.quit()");
 
@@ -275,34 +260,6 @@ public class GATTServerActivity extends Service {
         //FENOM: TODO: ma va implementato o no? Sembra che i permessi del bluetooth non vadano chiesti a runtime mai, dovrebbe bastare specificarli nel manifest...
         return;
     }
-
-    /*
-    /**
-     * Listens for system time changes and triggers a notification to
-     * Bluetooth subscribers.
-     * /
-    private BroadcastReceiver mTimeReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            byte adjustReason;
-            switch (intent.getAction()) {
-                case Intent.ACTION_TIME_CHANGED:
-                    adjustReason = TimeProfile.ADJUST_MANUAL;
-                    break;
-                case Intent.ACTION_TIMEZONE_CHANGED:
-                    adjustReason = TimeProfile.ADJUST_TIMEZONE;
-                    break;
-                default:
-                case Intent.ACTION_TIME_TICK:
-                    adjustReason = TimeProfile.ADJUST_NONE;
-                    break;
-            }
-            long now = System.currentTimeMillis();
-            notifyRegisteredDevices(now, adjustReason);
-            updateLocalUi(now);
-        }
-    };
-     */
 
     /**
      * Listens for Bluetooth adapter events to enable/disable
@@ -472,20 +429,6 @@ public class GATTServerActivity extends Service {
             timeCharacteristic.setValue(exactTime);
             mBluetoothGattServer.notifyCharacteristicChanged(device, timeCharacteristic, false);
         }
-    }
-
-     */
-
-    /*
-    /**
-     * Update graphical UI on devices that support it with the current time.
-     * /
-    private void updateLocalUi(long timestamp) {
-        Date date = new Date(timestamp);
-        String displayDate = DateFormat.getMediumDateFormat(this).format(date)
-                + "\n"
-                + DateFormat.getTimeFormat(this).format(date);
-        mLocalTimeView.setText(displayDate);
     }
 
      */
@@ -731,4 +674,18 @@ public class GATTServerActivity extends Service {
             */
         }
     };
+
+
+    public final static String GATT_SERVER_STATUS_ACTION = "gatt-server-status";
+    public final static String SERVICE_STATUS_KEY = "status";
+
+    /**
+     * call this method to notify the rest of the app for GATT Server status changes
+     * @param status
+     */
+    private void broadcastStatusUpdate(final ServiceStatus status) {
+        final Intent intent = new Intent(GATT_SERVER_STATUS_ACTION);
+        intent.putExtra(SERVICE_STATUS_KEY, status);
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+    }
 }

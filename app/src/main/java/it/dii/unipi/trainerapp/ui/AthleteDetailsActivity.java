@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentContainerView;
 
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 
 import it.dii.unipi.trainerapp.R;
 import it.dii.unipi.trainerapp.athlete.Athlete;
@@ -24,6 +25,7 @@ public class AthleteDetailsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_athlete_details);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); // Devices with a display should not go to sleep
         Bundle receivedBundle = getIntent().getExtras();
         if(receivedBundle != null){
             this.athleteObj = (Athlete) receivedBundle.getSerializable(ATHLETE_OBJ_KEY);

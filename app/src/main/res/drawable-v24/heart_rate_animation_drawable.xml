@@ -3,6 +3,6 @@
     android:id="@+id/heartRateIcon"
     android:oneshot="false"
     >
-    <item android:drawable="@drawable/ic_outline_security_24" android:duration="200" />
+    <item android:drawable="@drawable/ic_heart_24" android:duration="200" />
     <item android:drawable="@android:color/transparent" android:duration="800" />
 </animation-list>

@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import it.dii.unipi.trainerapp.GATTserver.profiles.athleteProfile.AthleteProfile;
 import it.dii.unipi.trainerapp.GATTserver.profiles.athleteProfile.services.athleteInformationService.AthleteInformationService;
@@ -309,13 +310,14 @@ public class GATTServerActivity extends Service {
                 .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM)
                 .build();
 
+        ParcelUuid serviceUuid = new ParcelUuid(AthleteInformationService.ATHLETE_INFORMATION_SERVICE);
 
         AdvertiseData data = new AdvertiseData.Builder()
                 .setIncludeDeviceName(true)
                 .setIncludeTxPowerLevel(false)
                 //TODO: broadcast the trainer name and a right UUID that should be knwown by the client app
                 //.addServiceData(new ParcelUuid(AthleteInformationService.ATHLETE_INFORMATION_SERVICE), "trainerApp".getBytes(StandardCharsets.UTF_8))
-                .addServiceUuid(new ParcelUuid(AthleteInformationService.ATHLETE_INFORMATION_SERVICE))
+                .addServiceUuid(serviceUuid)
                 //FENOM: TODO: add service UUID here (ma vanno aggiunti gli UUID di tutti i service o solo di uno basta?)
                 .build();
 
@@ -358,6 +360,7 @@ public class GATTServerActivity extends Service {
         //FENOM: TODO: add here the other services
         this.addServiceToQueueOfPendingServices(AthleteProfile.getAthleteInformationService());
         this.addServiceToQueueOfPendingServices(AthleteProfile.getHeartRateService());
+        this.addServiceToQueueOfPendingServices(AthleteProfile.getMovementService());
 
     }
 

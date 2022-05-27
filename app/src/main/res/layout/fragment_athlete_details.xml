@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     tools:context=".ui.fragments.AthleteDetailsFragment">
     <ScrollView
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
     <LinearLayout
@@ -67,6 +66,7 @@
         android:gravity="center_horizontal"
         android:orientation="horizontal"
         android:padding="20dp">
+
         <TextView
             android:id="@+id/detailsFragmentSpeed"
             android:layout_width="wrap_content"
@@ -78,8 +78,9 @@
 
         <TextView
             android:id="@+id/detailsFragmentHeartRate"
-            android:layout_width="80dp"
-            android:layout_height="34dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
             android:drawableLeft="@drawable/ic_outline_security_24"
             android:drawablePadding="10dp"
             android:text="HR" />
@@ -90,6 +91,7 @@
             style="@style/Theme.TrainerApp"
             android:layout_width="315dp"
             android:layout_height="183dp"
+            android:layout_marginBottom="30dp"
             android:title="@string/heart_rate_series" />
 
         <com.androidplot.xy.XYPlot

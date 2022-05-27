@@ -78,8 +78,7 @@ public class MainActivity extends AppCompatActivity {
             Log.i(TAG, "New athlete received from the service -> performing " + action_to_perform);
 
             switch (action_to_perform) {
-                case IntentMessagesManager
-                        .ATHLETE_INTENT_ACTION_ADD_OR_UPDATE_ATHLETE:
+                case IntentMessagesManager.ATHLETE_INTENT_ACTION_ADD_OR_UPDATE_ATHLETE:
                     Athlete receivedAthlete = (Athlete) intent.getSerializableExtra(IntentMessagesManager.ATHLETE_INTENT_ATHLETE_OBJ_KEY);
                     if(adapter.getPosition(receivedAthlete)<0) {
                         arrayOfAthletes.add(receivedAthlete);

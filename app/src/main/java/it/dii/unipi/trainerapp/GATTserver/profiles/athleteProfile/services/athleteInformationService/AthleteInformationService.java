@@ -8,6 +8,7 @@ import java.util.UUID;
 public class AthleteInformationService {
     private static final String TAG = AthleteInformationService.class.getSimpleName();
 
+    public static UUID SHORT_ATHLETE_INFORMATION_SERVICE = UUID.fromString("0000b614-0000-1000-8000-00805F9B34FB");
     public static UUID ATHLETE_INFORMATION_SERVICE = UUID.fromString("a173b614-8dff-455d-83d1-37de25b9432c");
     public static UUID ATHLETE_NAME_CHARACTERISTIC = UUID.fromString("4fe10359-2ce1-4e3e-848d-aec36a32930c");
 

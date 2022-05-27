@@ -145,6 +145,14 @@ public class Athlete implements Serializable {
         return activityHistory.lastEntry().getValue();
     }
 
+    public Integer getLastStepsMeasurement(){
+        if(stepCounterHistory.isEmpty()){
+            LogAccessingEmptyResource(TAG, "trying to access to steps for empty set for the athlete ID: '" + this.athleteID + "'");
+            return null;
+        }
+        return stepCounterHistory.lastEntry().getValue();
+    }
+
     public NavigableMap<LocalDateTime, Integer> getHeartRateHistory(){
         if(heartRateHistory.isEmpty()){
             LogAccessingEmptyResource(TAG, "trying to access to heart rate info for empty set for the athlete ID: '" + this.athleteID + "'");

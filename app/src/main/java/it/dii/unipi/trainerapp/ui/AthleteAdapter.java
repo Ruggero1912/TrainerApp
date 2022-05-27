@@ -63,7 +63,7 @@ public class AthleteAdapter extends ArrayAdapter<Athlete> {
             case WALKING:
                 activityIcon = R.drawable.ic_walk_24;
                 break;
-            case STANDING:
+            case STILL:
                 activityIcon = R.drawable.ic_standing_24;
                 break;
             default:

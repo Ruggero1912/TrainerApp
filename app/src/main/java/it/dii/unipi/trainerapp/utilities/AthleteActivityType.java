@@ -1,9 +1,15 @@
 package it.dii.unipi.trainerapp.utilities;
 
 public enum AthleteActivityType {
-    RUNNING,
+    IN_VEHICLE,
+    ON_BICYCLE,
+    ON_FOOT,
+    STILL,
+    UNKNOWN,
+    TILTING,
+    UNRECOGNISED,
     WALKING,
-    STANDING;
+    RUNNING;
 
     public static AthleteActivityType defaultAthleteActivityType = WALKING;
 

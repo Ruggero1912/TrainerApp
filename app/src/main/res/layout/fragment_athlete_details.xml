@@ -84,6 +84,15 @@
             android:drawableLeft="@drawable/ic_heart_24"
             android:drawablePadding="10dp"
             android:text="HR" />
+
+        <TextView
+            android:id="@+id/detailsFragmentSteps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:drawableLeft="@drawable/ic_steps_24"
+            android:drawablePadding="10dp"
+            android:text="0" />
     </LinearLayout>
 
         <com.androidplot.xy.XYPlot

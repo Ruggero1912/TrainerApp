@@ -135,7 +135,7 @@ public class AthleteDetailsFragment extends Fragment {
             case WALKING:
                 activityIcon = R.drawable.ic_walk_24;
                 break;
-            case STANDING:
+            case STILL:
                 activityIcon = R.drawable.ic_standing_24;
                 break;
             default:
@@ -168,9 +168,9 @@ public class AthleteDetailsFragment extends Fragment {
         Double lastSpeedMeasure = boundedAthlete.getLastSpeedMeasurement();
         String lastSpeedMeasureString = "";
         if(lastSpeedMeasure == null){
-            lastSpeedMeasureString = "NA km/h";
+            lastSpeedMeasureString = "NA m/s";
         }else{
-            lastSpeedMeasureString = lastSpeedMeasure.toString() + " km/h";
+            lastSpeedMeasureString = lastSpeedMeasure.toString() + " m/s";
         }
         TextView tvSpeed = fragmentView.findViewById(R.id.detailsFragmentSpeed);
         tvSpeed.setText(lastSpeedMeasureString);
@@ -184,6 +184,16 @@ public class AthleteDetailsFragment extends Fragment {
             lastHRMString = Integer.toString(lastHRMeasure);
         }
         heartRate.setText(lastHRMString);
+
+        TextView steps = fragmentView.findViewById(R.id.detailsFragmentSteps);
+        Integer lastStepMeasurement = boundedAthlete.getLastStepsMeasurement();
+        String lastStepsString = null;
+        if(lastStepMeasurement == null){
+            lastStepsString = "NA";
+        }else{
+            lastStepsString = Integer.toString(lastStepMeasurement);
+        }
+        steps.setText(lastStepsString);
 
         plotChart(boundedAthlete.getHeartRateHistory(), CHART_TYPE_HEART_RATE);
         plotChart(boundedAthlete.getSpeedHistory(), CHART_TYPE_SPEED);

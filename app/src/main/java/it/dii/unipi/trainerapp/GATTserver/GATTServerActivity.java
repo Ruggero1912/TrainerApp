@@ -254,7 +254,7 @@ public class GATTServerActivity extends Service {
                 return false;
             }
         }else if(ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED){
-            Log.d(TAG, " | canBluetoothAdvertise | Api level under VERSION_CODES.S, Bluetooth Admin permission not granted!");
+            Log.d(TAG, " | canBluetoothAdvertise | Api level under VERSION_CODES.S, Bluetooth permission not granted!");
             return false;
         }
         return true;
@@ -356,8 +356,6 @@ public class GATTServerActivity extends Service {
             Log.i(TAG, "GATT server created");
         }
 
-        //mBluetoothGattServer.addService(TimeProfile.createTimeService());
-        //FENOM: TODO: add here the other services
         this.addServiceToQueueOfPendingServices(AthleteProfile.getAthleteInformationService());
         this.addServiceToQueueOfPendingServices(AthleteProfile.getHeartRateService());
         this.addServiceToQueueOfPendingServices(AthleteProfile.getMovementService());

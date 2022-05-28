@@ -1,5 +1,6 @@
 package it.dii.unipi.trainerapp.athlete;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
 
 import java.io.Serializable;
@@ -10,7 +11,7 @@ import java.util.TreeMap;
 import it.dii.unipi.trainerapp.utilities.AthleteActivityType;
 import it.dii.unipi.trainerapp.utilities.DeviceID;
 
-public class Athlete implements Serializable {
+public class Athlete implements Serializable, Comparable {
     private static final String TAG = Athlete.class.getSimpleName();
 
     private static final boolean SHOULD_LOG_EMPTY_ACCESSES = false;
@@ -220,6 +221,67 @@ public class Athlete implements Serializable {
     private void LogAccessingEmptyResource(String TAG, String logRow){
         if(SHOULD_LOG_EMPTY_ACCESSES){
             Log.v(TAG, logRow);
+        }
+    }
+
+    /**
+     * method used to sort an ArrayList of Athletes.
+     * It orders them by their statistics
+     * @param o
+     * @return a positive number if this should go after Athlete b, else a negative number
+     */
+    @SuppressLint("NewApi")
+    @Override
+    public int compareTo(Object o) {
+        Athlete b = (Athlete) o;    // ! good
+        //if the athlete is not initialized, it should go at the bottom of the list
+        if(this.isInitialized() == false){
+            return 1;
+        }
+        if(b.isInitialized() == false){
+            return -1;
+        }
+        //the connected athlete are shown before the away athlete
+        if(this.getConnectionStatus() != b.getConnectionStatus()) {
+            if(this.getConnectionStatus() == CONNECTION_STATUS.CONNECTED){
+                return -1;
+            }else{
+                // case in which this is AWAY and b is connected
+                return 1;
+            }
+        }
+
+        Double thisEMA = this.getHeartRateEMA();
+        Double otherEMA = b.getHeartRateEMA();
+
+        if(thisEMA != null){
+            if(otherEMA == null){
+                return -1;
+            }
+            if(thisEMA > otherEMA){
+                return -1;
+            }else if(thisEMA < otherEMA){
+                return 1;
+            }
+        }else if(otherEMA != null){
+            return 1;
+        }
+
+        // case in which both athletes are initialized, both connected (or both away)
+        // and both do not have hr EMA
+
+        // will sort by firstConnection ts
+        if(this.getFirstConnection() == null){
+            if(this.getName().compareTo(b.getName()) > 0){
+                return 1;
+            }
+            return -1;
+        }
+        if( this.getFirstConnection().isAfter( b.getFirstConnection() ) ){
+            //first the new devices
+            return -1;
+        }else{
+            return 1;
         }
     }
 }

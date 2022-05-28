@@ -26,6 +26,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import it.dii.unipi.trainerapp.GATTserver.GATTServerActivity;
 import it.dii.unipi.trainerapp.athlete.Athlete;
@@ -92,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.i(TAG, "Updating athlete: " + receivedAthlete.getName()
                                 + ", position: " + athleteIndex);
                         arrayOfAthletes.set(athleteIndex, receivedAthlete);
+                        Collections.sort(arrayOfAthletes);
                         adapter.notifyDataSetChanged();
                     }
                     break;

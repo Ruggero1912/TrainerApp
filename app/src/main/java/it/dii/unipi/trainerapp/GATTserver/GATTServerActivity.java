@@ -313,7 +313,7 @@ public class GATTServerActivity extends Service {
         ParcelUuid serviceUuid = new ParcelUuid(AthleteInformationService.ATHLETE_INFORMATION_SERVICE);
 
         AdvertiseData data = new AdvertiseData.Builder()
-                .setIncludeDeviceName(true)
+                //.setIncludeDeviceName(true)
                 .setIncludeTxPowerLevel(false)
                 //TODO: broadcast the trainer name and a right UUID that should be knwown by the client app
                 //.addServiceData(new ParcelUuid(AthleteInformationService.ATHLETE_INFORMATION_SERVICE), "trainerApp".getBytes(StandardCharsets.UTF_8))
@@ -640,14 +640,14 @@ public class GATTServerActivity extends Service {
                 }else {
                     Log.v(TAG, "skipping response");
                 }
-            }else if(AthleteProfile.PEACE_CHARACTERISTIC.equals(characteristic.getUuid())){
-                double receivedPeace = ByteBuffer.wrap(value).getDouble();
+            }else if(AthleteProfile.PACE_CHARACTERISTIC.equals(characteristic.getUuid())){
+                double receivedPace = ByteBuffer.wrap(value).getDouble();
 
-                if(receivedPeace > 2.5 || receivedPeace < 0){
-                    Log.w(TAG, "the received peace is out of bounds! received value converted as double: " + receivedPeace + " | raw data: " + value);
+                if(receivedPace > 4.5 || receivedPace < 0){
+                    Log.w(TAG, "the received pace is out of bounds! received value converted as double: " + receivedPace + " | raw data: " + value);
                 }
 
-                athletesManager.storePeaceMeasurementForAthlete(new DeviceID(device).toString(), receivedPeace);
+                athletesManager.storePaceMeasurementForAthlete(new DeviceID(device).toString(), receivedPace);
 
                 if(responseNeeded) {
                     mBluetoothGattServer.sendResponse(device,

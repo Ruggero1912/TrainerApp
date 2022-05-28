@@ -206,7 +206,6 @@ public class AthleteDetailsFragment extends Fragment {
         plotChart(boundedAthlete.getSpeedHistory(), CHART_TYPE_SPEED);
     }
 
-    //TODO: check whether this function actually plot the graph correctly
     private void plotChart(NavigableMap<?, ?> series, String chartType){
         XYSeries xySeries = null;
         LineAndPointFormatter seriesFormat = null;

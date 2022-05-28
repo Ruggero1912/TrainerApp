@@ -269,4 +269,10 @@ public class AthleteDetailsFragment extends Fragment {
             }
         }
     };
+
+    @Override
+    public void onDestroy() {
+        LocalBroadcastManager.getInstance(ctx).unregisterReceiver(mMessageReceiver);
+        super.onDestroy();
+    }
 }

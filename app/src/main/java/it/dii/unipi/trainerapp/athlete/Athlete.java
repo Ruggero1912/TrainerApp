@@ -143,6 +143,18 @@ public class Athlete implements Serializable, Comparable {
         return lastHeartRateEMA;
     }
 
+    /**
+     *
+     * @return the EMA for heart rate or last hr measure if EMA is not available
+     *  if also the lastHRMeasure is null, returns null
+     */
+    public Double getHeartRateEMAorLastHR(){
+        if(getHeartRateEMA() == null){
+            return ( getLastHeartRateMeasurement() != null ? Double.valueOf( getLastHeartRateMeasurement() ) : null );
+        }
+        return getHeartRateEMA();
+    }
+
     private Double updateHeartRateEMA(){
         if(heartRateHistory.size() < HR_WINDOW_SIZE){
             Log.v(TAG, "calculateHeartRateEMA: since the hrHistory size is lower than WINDOW_SIZE will not calculate EMA, returning null");
@@ -224,6 +236,42 @@ public class Athlete implements Serializable, Comparable {
         }
     }
 
+    public enum TRAINING_STATUS{
+        OVER_TRAINING,
+        GOOD,
+        LOW,
+        REST;
+
+        public static TRAINING_STATUS DEFAULT = REST;
+
+        public static Double OVER_TRAINING_HR_THRESHOLD = 150.0;
+        public static Double GOOD_TRAINING_HR_THRESHOLD = 100.0;
+        public static Double LOW_TRAINING_HR_THRESHOLD = 80.0;
+    }
+
+    /**
+     *
+     * @return the current training status according to the available statistics
+     */
+    public TRAINING_STATUS getCurrentTrainingStatus(){
+        if( ! isInitialized() ){
+            return TRAINING_STATUS.DEFAULT;
+        }
+        Double hr = getHeartRateEMAorLastHR();
+        if(hr == null){
+            return TRAINING_STATUS.DEFAULT;
+        }
+        if(hr <= TRAINING_STATUS.LOW_TRAINING_HR_THRESHOLD){
+            return TRAINING_STATUS.REST;
+        }else if(hr <= TRAINING_STATUS.GOOD_TRAINING_HR_THRESHOLD){
+            return TRAINING_STATUS.LOW;
+        }else if(hr <= TRAINING_STATUS.OVER_TRAINING_HR_THRESHOLD){
+            return TRAINING_STATUS.GOOD;
+        }else{
+            return TRAINING_STATUS.OVER_TRAINING;
+        }
+    }
+
     /**
      * method used to sort an ArrayList of Athletes.
      * It orders them by their statistics
@@ -233,38 +281,40 @@ public class Athlete implements Serializable, Comparable {
     @SuppressLint("NewApi")
     @Override
     public int compareTo(Object o) {
+        final int THIS_BEFORE = -1;
+        final int THE_OTHER_BEFORE = 1;
         Athlete b = (Athlete) o;    // ! good
         //if the athlete is not initialized, it should go at the bottom of the list
         if(this.isInitialized() == false){
-            return 1;
+            return THE_OTHER_BEFORE;
         }
         if(b.isInitialized() == false){
-            return -1;
+            return THIS_BEFORE;
         }
         //the connected athlete are shown before the away athlete
         if(this.getConnectionStatus() != b.getConnectionStatus()) {
             if(this.getConnectionStatus() == CONNECTION_STATUS.CONNECTED){
-                return -1;
+                return THIS_BEFORE;
             }else{
                 // case in which this is AWAY and b is connected
-                return 1;
+                return THE_OTHER_BEFORE;
             }
         }
 
-        Double thisEMA = this.getHeartRateEMA();
-        Double otherEMA = b.getHeartRateEMA();
+        Double thisEMA = this.getHeartRateEMAorLastHR();
+        Double otherEMA = b.getHeartRateEMAorLastHR();
 
         if(thisEMA != null){
             if(otherEMA == null){
-                return -1;
+                return THIS_BEFORE;
             }
             if(thisEMA > otherEMA){
-                return -1;
+                return THIS_BEFORE;
             }else if(thisEMA < otherEMA){
-                return 1;
+                return THE_OTHER_BEFORE;
             }
         }else if(otherEMA != null){
-            return 1;
+            return THE_OTHER_BEFORE;
         }
 
         // case in which both athletes are initialized, both connected (or both away)
@@ -273,15 +323,15 @@ public class Athlete implements Serializable, Comparable {
         // will sort by firstConnection ts
         if(this.getFirstConnection() == null){
             if(this.getName().compareTo(b.getName()) > 0){
-                return 1;
+                return THE_OTHER_BEFORE;
             }
-            return -1;
+            return THIS_BEFORE;
         }
         if( this.getFirstConnection().isAfter( b.getFirstConnection() ) ){
             //first the new devices
-            return -1;
+            return THIS_BEFORE;
         }else{
-            return 1;
+            return THE_OTHER_BEFORE;
         }
     }
 }

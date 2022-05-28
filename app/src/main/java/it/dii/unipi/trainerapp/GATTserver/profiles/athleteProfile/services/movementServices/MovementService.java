@@ -12,7 +12,7 @@ public class MovementService {
     public static UUID MOVEMENT_SERVICE = UUID.fromString("6b94f55a-dc3f-11ec-9d64-0242ac120002");
     public static UUID RECOGNIZED_ACTIVITY_CHARACTERISTIC = UUID.fromString("6b94f7e4-dc3f-11ec-9d64-0242ac120002");
     public static UUID SPEED_CHARACTERISTIC = UUID.fromString("6b94f92e-dc3f-11ec-9d64-0242ac120002");
-    public static UUID PEACE_CHARACTERISTIC = UUID.fromString("6b94fc58-dc3f-11ec-9d64-0242ac120002");
+    public static UUID PACE_CHARACTERISTIC = UUID.fromString("6b94fc58-dc3f-11ec-9d64-0242ac120002");
     public static UUID STEP_COUNTER_CHARACTERISTIC = UUID.fromString("6b94fd70-dc3f-11ec-9d64-0242ac120002");
 
     public static BluetoothGattService createMovementService() {
@@ -28,8 +28,8 @@ public class MovementService {
                 BluetoothGattCharacteristic.PROPERTY_WRITE,
                 BluetoothGattCharacteristic.PERMISSION_WRITE);
 
-        // peace characteristic
-        BluetoothGattCharacteristic athletePeaceCharacteristic = new BluetoothGattCharacteristic(PEACE_CHARACTERISTIC,
+        // pace characteristic
+        BluetoothGattCharacteristic athletePaceCharacteristic = new BluetoothGattCharacteristic(PACE_CHARACTERISTIC,
                 BluetoothGattCharacteristic.PROPERTY_WRITE,
                 BluetoothGattCharacteristic.PERMISSION_WRITE);
 
@@ -40,7 +40,7 @@ public class MovementService {
 
         service.addCharacteristic(athleteActivityCharacteristic);
         service.addCharacteristic(athleteSpeedCharacteristic);
-        service.addCharacteristic(athletePeaceCharacteristic);
+        service.addCharacteristic(athletePaceCharacteristic);
         service.addCharacteristic(athleteStepCounterCharacteristic);
 
         return service;

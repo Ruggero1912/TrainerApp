@@ -232,12 +232,13 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
-
         Log.d(TAG, "MainActivity.onDestroy has been called");
 
         stopGATTServerService();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(GATTServerStatusBroadcastReceiver);
 
+        super.onDestroy();
     }
 
     private ServiceStatus GATTServerServiceStatus = ServiceStatus.TERMINATED;

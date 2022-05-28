@@ -47,7 +47,24 @@ public class AthleteAdapter extends ArrayAdapter<Athlete> {
             convertView.setVisibility(View.VISIBLE);
         }
 
-        // Lookup view for data population
+        Athlete.TRAINING_STATUS currentTrainingStatus = a.getCurrentTrainingStatus();
+
+        switch (currentTrainingStatus){
+            case REST:
+                convertView.setBackgroundResource(R.drawable.grey_gradient_color);
+                break;
+            case LOW:
+                convertView.setBackgroundResource(R.drawable.green_gradient_color);
+                break;
+            case GOOD:
+                convertView.setBackgroundResource(R.drawable.blue_gradient_color);
+                break;
+            case OVER_TRAINING:
+                convertView.setBackgroundResource(R.drawable.red_gradient_color);
+                break;
+            default:
+                Log.v(TAG, "athlete adapter unrecognised TRAINING_STATUS");
+        }
 
         AthleteActivityType currentAthleteActivityType = a.getCurrentActivity();
         Integer activityIcon = -1;

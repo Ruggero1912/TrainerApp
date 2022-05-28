@@ -26,7 +26,7 @@ public class Athlete implements Serializable, Comparable {
     private NavigableMap<LocalDateTime, Double> speedHistory = new TreeMap<>();
     private NavigableMap<LocalDateTime, AthleteActivityType> activityHistory = new TreeMap<>();
     private NavigableMap<LocalDateTime, Integer> stepCounterHistory = new TreeMap<>();
-    private NavigableMap<LocalDateTime, Double> peaceHistory = new TreeMap<>();
+    private NavigableMap<LocalDateTime, Double> paceHistory = new TreeMap<>();
 
 
     private static final String NAME_NOT_SET = "NAME NOT SET";
@@ -118,8 +118,8 @@ public class Athlete implements Serializable, Comparable {
     public void storeStepCounterMeasurement(Integer stepCount, LocalDateTime time){
         stepCounterHistory.put(time, stepCount);
     }
-    public void storePeaceMeasurement(Double currentPeace, LocalDateTime time){
-        peaceHistory.put(time, currentPeace);
+    public void storePaceMeasurement(Double currentPace, LocalDateTime time){
+        paceHistory.put(time, currentPace);
     }
     public Integer getLastHeartRateMeasurement(){
         if(heartRateHistory.isEmpty()){

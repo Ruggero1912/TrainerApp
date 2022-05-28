@@ -106,6 +106,7 @@ public class Athlete implements Serializable {
     }
     public void storeHeartRateMeasurement(Integer heartRateMeasurement, LocalDateTime time){
         heartRateHistory.put(time, heartRateMeasurement);
+        updateHeartRateEMA();
     }
     public void storeSpeedMeasurement(Double currentSpeed, LocalDateTime time){
         speedHistory.put(time, currentSpeed);
@@ -126,6 +127,55 @@ public class Athlete implements Serializable {
         }
         return heartRateHistory.lastEntry().getValue();
     }
+
+    private static final int HR_WINDOW_SIZE = 10;
+    private static final int HR_SMOOTHING_FACTOR = 2;
+
+    private Double lastHeartRateEMA = null;
+
+    /**
+     *
+     * @return the exponential moving average for the heart rate measurement for the athlete
+     * if the number of HR measures is lower than the window size, return null
+     */
+    public Double getHeartRateEMA(){
+        return lastHeartRateEMA;
+    }
+
+    private Double updateHeartRateEMA(){
+        if(heartRateHistory.size() < HR_WINDOW_SIZE){
+            Log.v(TAG, "calculateHeartRateEMA: since the hrHistory size is lower than WINDOW_SIZE will not calculate EMA, returning null");
+            return null;
+            //return Double.valueOf(getLastHeartRateMeasurement());
+        }
+        if(lastHeartRateEMA == null){
+            lastHeartRateEMA = calculateHeartRateSMA();
+            return lastHeartRateEMA;
+        }
+        Double currentHR = Double.valueOf( getLastHeartRateMeasurement() );
+        final double k = HR_SMOOTHING_FACTOR / Double.valueOf( 1 + HR_WINDOW_SIZE);
+        lastHeartRateEMA = currentHR * (k) + lastHeartRateEMA * (1 - k);
+        return lastHeartRateEMA;
+    }
+
+    /**
+     * calculate the Simple Moving Average for the heart rate using a window of WINDOW_SIZE
+     * @return
+     */
+    private Double calculateHeartRateSMA(){
+        int counter = 0;
+        int sum = 0;
+        for (int hrMeasure:
+             heartRateHistory.descendingMap().values()) {
+            if(counter >= HR_WINDOW_SIZE){
+                break;
+            }
+            sum += hrMeasure;
+            counter++;
+        }
+        return sum / Double.valueOf(counter) ;
+    }
+
     public Double getLastSpeedMeasurement(){
         if(speedHistory.isEmpty()){
             LogAccessingEmptyResource(TAG, "trying to access to speed measure for empty set for the athlete ID: '" + this.athleteID + "'");

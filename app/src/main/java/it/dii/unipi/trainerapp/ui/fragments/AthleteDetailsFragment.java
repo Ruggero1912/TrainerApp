@@ -176,12 +176,19 @@ public class AthleteDetailsFragment extends Fragment {
         tvSpeed.setText(lastSpeedMeasureString);
 
         TextView heartRate = fragmentView.findViewById(R.id.detailsFragmentHeartRate);
-        Integer lastHRMeasure = boundedAthlete.getLastHeartRateMeasurement();
         String lastHRMString = null;
-        if(lastHRMeasure == null){
-            lastHRMString = "NA";
+        Double HRMeasure = boundedAthlete.getHeartRateEMA();
+        if(HRMeasure == null){
+            //case in which the EMA is not available yet
+            Integer lastHRM = boundedAthlete.getLastHeartRateMeasurement();
+            if(lastHRM == null){
+                lastHRMString = "NA";
+            }
+            else{
+                lastHRMString = lastHRM.toString();
+            }
         }else{
-            lastHRMString = Integer.toString(lastHRMeasure);
+            lastHRMString = String.format("%.1f", HRMeasure);//Double.toString(HRMeasure);
         }
         heartRate.setText(lastHRMString);
 

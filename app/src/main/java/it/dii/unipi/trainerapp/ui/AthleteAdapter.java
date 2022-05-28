@@ -107,17 +107,25 @@ public class AthleteAdapter extends ArrayAdapter<Athlete> {
         tvSpeed.setText(lastSpeedMeasureString);
 
         TextView heartRate = (TextView) convertView.findViewById(R.id.tvHeartRate);
-        Integer lastHRMeasure = a.getLastHeartRateMeasurement();
         String lastHRMString = null;
-        if(lastHRMeasure == null){
-            lastHRMString = "NA";
+        Double HRMeasure = a.getHeartRateEMA();
+        if(HRMeasure == null){
+            //case in which the EMA is not available yet
+            Integer lastHRM = a.getLastHeartRateMeasurement();
+            if(lastHRM == null){
+                lastHRMString = "NA";
+            }
+            else{
+                lastHRMString = lastHRM.toString();
+            }
         }else{
-            lastHRMString = Integer.toString(lastHRMeasure);
+            lastHRMString = String.format("%.1f", HRMeasure);//Double.toString(HRMeasure);
         }
+
         heartRate.setText(lastHRMString);
         heartRate.setBackgroundResource(R.drawable.heart_rate_animation_drawable);
         AnimationDrawable frameAnimation = (AnimationDrawable) heartRate.getBackground();
-        if(isNew || (! frameAnimation.isRunning() && a.getConnectionStatus() == Athlete.CONNECTION_STATUS.CONNECTED))
+        if(isNew || (! frameAnimation.isRunning() && a.getConnectionStatus() == Athlete.CONNECTION_STATUS.CONNECTED && ! lastHRMString.equals("NA")))
             frameAnimation.start();
         //https://developer.android.com/reference/android/graphics/drawable/AnimationDrawable
 

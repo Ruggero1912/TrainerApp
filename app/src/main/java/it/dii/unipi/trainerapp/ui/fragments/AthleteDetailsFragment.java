@@ -202,7 +202,7 @@ public class AthleteDetailsFragment extends Fragment {
         }
         steps.setText(lastStepsString);
 
-        TextView totalDistanceTV = fragmentView.findViewById(R.id.detailsFragmentSteps);
+        TextView totalDistanceTV = fragmentView.findViewById(R.id.detailsFragmentTotalDistance);
         Double totalDistanceMeasurement = boundedAthlete.getLastTotalDistanceMeasurement();
         String totalDistanceString = null;
         if(totalDistanceMeasurement == null){

@@ -658,6 +658,24 @@ public class GATTServerActivity extends Service {
                 }else {
                     Log.v(TAG, "skipping response");
                 }
+            }else if(AthleteProfile.DISTANCE_CHARACTERISTIC.equals(characteristic.getUuid())){
+                double receivedDistance = ByteBuffer.wrap(value).getDouble();
+
+                if(receivedDistance < 0){
+                    Log.w(TAG, "the received distance cannot be negative! received value converted as double: " + receivedDistance + " | raw data: " + value);
+                }
+
+                athletesManager.storeTotalDistanceMeasurementForAthlete(new DeviceID(device).toString(), receivedDistance);
+
+                if(responseNeeded) {
+                    mBluetoothGattServer.sendResponse(device,
+                            requestId,
+                            BluetoothGatt.GATT_SUCCESS,
+                            0,
+                            "saved".getBytes(StandardCharsets.UTF_8));
+                }else {
+                    Log.v(TAG, "skipping response");
+                }
             }
             else {
                 // Invalid characteristic

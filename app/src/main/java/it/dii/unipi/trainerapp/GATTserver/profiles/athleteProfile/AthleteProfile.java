@@ -26,6 +26,7 @@ public class AthleteProfile {
     public static UUID RECOGNIZED_ACTIVITY_CHARACTERISTIC = MovementService.RECOGNIZED_ACTIVITY_CHARACTERISTIC;
     public static UUID PACE_CHARACTERISTIC = MovementService.PACE_CHARACTERISTIC;
     public static UUID STEP_COUNTER_CHARACTERISTIC = MovementService.STEP_COUNTER_CHARACTERISTIC;
+    public static UUID DISTANCE_CHARACTERISTIC = MovementService.DISTANCE_CHARACTERISTIC;
 
 
     public static BluetoothGattService getAthleteInformationService() {

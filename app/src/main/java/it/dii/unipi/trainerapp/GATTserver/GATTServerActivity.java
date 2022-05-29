@@ -313,12 +313,8 @@ public class GATTServerActivity extends Service {
         ParcelUuid serviceUuid = new ParcelUuid(AthleteInformationService.ATHLETE_INFORMATION_SERVICE);
 
         AdvertiseData data = new AdvertiseData.Builder()
-                //.setIncludeDeviceName(true)
                 .setIncludeTxPowerLevel(false)
-                //TODO: broadcast the trainer name and a right UUID that should be knwown by the client app
-                //.addServiceData(new ParcelUuid(AthleteInformationService.ATHLETE_INFORMATION_SERVICE), "trainerApp".getBytes(StandardCharsets.UTF_8))
                 .addServiceUuid(serviceUuid)
-                //FENOM: TODO: add service UUID here (ma vanno aggiunti gli UUID di tutti i service o solo di uno basta?)
                 .build();
 
         if(canBluetoothAdvertise()) {
@@ -533,6 +529,9 @@ public class GATTServerActivity extends Service {
             }
         }
 
+        private int writeHRreceivedCounter = 0;
+        private int writeSpeedReceivedCounter = 0;
+
         @Override
         @SuppressWarnings("MissingPermission")
         public void onCharacteristicWriteRequest(BluetoothDevice device, int requestId, BluetoothGattCharacteristic characteristic, boolean preparedWrite, boolean responseNeeded, int offset, byte[] value) {
@@ -559,22 +558,13 @@ public class GATTServerActivity extends Service {
                     Log.v(TAG, "skipping response");
                 }
             }else if(AthleteProfile.HEART_RATE_CHARACTERISTIC.equals(characteristic.getUuid())){
-                //TODO: the received value could directly be an encoded integer and not a string, parse it in the right way and test it
+                writeHRreceivedCounter++;
                 int receivedHR = new BigInteger(value).intValue();
 
                 if(receivedHR > 200 || receivedHR < 0){
                     Log.w(TAG, "the received HR is out of bounds! received value converted as int: " + receivedHR + " | raw data: " + value);
                 }
-                /*
-                String athleteHRString = new String(value, StandardCharsets.UTF_8);
-                Integer hrParsed = null;
-                try{
 
-                    Integer.parseInt(athleteHRString);
-                } catch (Exception e){
-                    Log.e(TAG, "the given hr measurement was not recognised as valid Integer!");
-                }
-                 */
                 athletesManager.storeHeartRateMeasurementForAthlete(new DeviceID(device).toString(), receivedHR);
 
                 if(responseNeeded) {
@@ -587,6 +577,8 @@ public class GATTServerActivity extends Service {
                     Log.v(TAG, "skipping response");
                 }
             }else if(AthleteProfile.SPEED_CHARACTERISTIC.equals(characteristic.getUuid())){
+                writeSpeedReceivedCounter++;
+                Log.v(TAG, "received a write request on SPEED_CHARACTERISTIC");
                 double receivedSpeed = ByteBuffer.wrap(value).getDouble();
 
                 if(receivedSpeed > 37 || receivedSpeed < 0){
@@ -691,6 +683,8 @@ public class GATTServerActivity extends Service {
                     Log.v(TAG, "skipping response");
                 }
             }
+
+            //Log.v(TAG, "write requests received in total on HR: " + writeHRreceivedCounter + " | on Speed: " + writeSpeedReceivedCounter);
 
         }
 

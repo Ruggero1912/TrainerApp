@@ -237,6 +237,7 @@ public class MainActivity extends AppCompatActivity {
         stopGATTServerService();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(GATTServerStatusBroadcastReceiver);
+        isGATTServerStatusReceiverRegistered = false;
 
         super.onDestroy();
     }

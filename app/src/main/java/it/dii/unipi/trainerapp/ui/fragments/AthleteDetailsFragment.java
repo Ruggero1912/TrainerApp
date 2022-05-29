@@ -202,6 +202,16 @@ public class AthleteDetailsFragment extends Fragment {
         }
         steps.setText(lastStepsString);
 
+        TextView totalDistanceTV = fragmentView.findViewById(R.id.detailsFragmentSteps);
+        Double totalDistanceMeasurement = boundedAthlete.getLastTotalDistanceMeasurement();
+        String totalDistanceString = null;
+        if(totalDistanceMeasurement == null){
+            totalDistanceString = "NA";
+        }else{
+            totalDistanceString = String.format("%.1f", totalDistanceMeasurement);//Double.toString(totalDistanceMeasurement);
+        }
+        totalDistanceTV.setText(totalDistanceString);
+
         plotChart(boundedAthlete.getHeartRateHistory(), CHART_TYPE_HEART_RATE);
         plotChart(boundedAthlete.getSpeedHistory(), CHART_TYPE_SPEED);
     }

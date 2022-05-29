@@ -56,8 +56,8 @@ public class AthleteDetailsActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
+    protected void onDestroy() {
+        super.onDestroy();
         Log.v(TAG, "AthleteDetailsActivity going to unregister receiver for GATTServerStatus");
         LocalBroadcastManager.getInstance(this).unregisterReceiver(GATTServerStatusBroadcastReceiver);
     }

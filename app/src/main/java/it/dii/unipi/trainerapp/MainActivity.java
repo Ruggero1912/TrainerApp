@@ -37,6 +37,7 @@ import it.dii.unipi.trainerapp.ui.WelcomeActivity;
 import it.dii.unipi.trainerapp.preferences.Preferences;
 import it.dii.unipi.trainerapp.preferences.SettingsActivity;
 import it.dii.unipi.trainerapp.utilities.ServiceStatus;
+import it.dii.unipi.trainerapp.utilities.Utility;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -55,6 +56,10 @@ public class MainActivity extends AppCompatActivity {
     private String insertedTrainerName;
     private boolean darkThemeEnabled;
     private TextView trainerName;
+
+    //For runtime permissions requests
+    private ActivityResultContracts.RequestMultiplePermissions multiplePermissionsContract;
+    private ActivityResultLauncher<String[]> multiplePermissionLauncher;
 
     private SharedPreferences.OnSharedPreferenceChangeListener sharedPrefListener =
         new SharedPreferences.OnSharedPreferenceChangeListener() {
@@ -117,6 +122,22 @@ public class MainActivity extends AppCompatActivity {
         myPreferences.registerOnSharedPreferenceChangeListener(sharedPrefListener); // register for changes on preferences
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); // Devices with a display should not go to sleep
 
+        //RUNTIME PERMISSIONS
+
+        multiplePermissionsContract = new ActivityResultContracts.RequestMultiplePermissions();
+        multiplePermissionLauncher = registerForActivityResult(multiplePermissionsContract, isGranted -> {
+            Log.d("PERMISSIONS", "Launcher result: " + isGranted.toString());
+            if (isGranted.containsValue(false)) {
+                Log.d("PERMISSIONS", "At least one of the permissions was not granted, launching again...");
+                if (Utility.getSdkVersion() >= 31) {
+                    multiplePermissionLauncher.launch(Utility.getPERMISSIONS_OVER_SDK31());
+                }
+            }
+        });
+
+        Utility.askPermissions(multiplePermissionLauncher,this);
+
+
         //we need to start the GATTServer Service sending an Intent to it
         startGATTServerService();
 
@@ -127,6 +148,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         //firstly checks whether the trainer name has already been set
+
+
         trainerNameFirstLaunch = Preferences.getTrainerName();
 
         if(!trainerNameFirstLaunch.equals("Name not found")){

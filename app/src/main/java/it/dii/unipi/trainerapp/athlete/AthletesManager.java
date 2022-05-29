@@ -230,6 +230,29 @@ public class AthletesManager {
         return storeSpeedMeasurementForAthlete(athleteID, registeredSpeed, currentTime);
     }
 
+    public boolean storeTotalDistanceMeasurementForAthlete(String athleteID, double totalDistance, LocalDateTime time){
+        Athlete a = getAthlete(athleteID);
+        if(a == null){
+            Log.e(TAG, "athlete not found for the ID '" + athleteID + "'! cannot store the measurement '" + totalDistance + "'..");
+            return false;
+        }
+        a.storeTotalDistanceMeasurement(totalDistance, time);
+        a.updateLastSeen();
+        Log.v(TAG, "stored new speed measure for the athlete " + a.getAthleteID() + " total distance value: " + totalDistance);
+        messagesManager.sendMessage(a, IntentMessagesManager.ATHLETE_INTENT_ACTION_UPDATE_ATHLETE);
+        return true;
+    }
+
+    public boolean storeTotalDistanceMeasurementForAthlete(String athleteID, double totalDistance){
+        LocalDateTime currentTime = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            currentTime = LocalDateTime.now();
+        }else{
+            Log.e(TAG, "cannot log the localdatetime of the totalDistance measure!");
+        }
+        return storeTotalDistanceMeasurementForAthlete(athleteID, totalDistance, currentTime);
+    }
+
     public boolean storeNewActivityForAthlete(String athleteID, AthleteActivityType activity, LocalDateTime time){
         Athlete a = getAthlete(athleteID);
         if(a == null){

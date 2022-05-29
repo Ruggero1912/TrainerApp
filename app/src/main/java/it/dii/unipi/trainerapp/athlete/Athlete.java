@@ -27,6 +27,7 @@ public class Athlete implements Serializable, Comparable {
     private NavigableMap<LocalDateTime, AthleteActivityType> activityHistory = new TreeMap<>();
     private NavigableMap<LocalDateTime, Integer> stepCounterHistory = new TreeMap<>();
     private NavigableMap<LocalDateTime, Double> paceHistory = new TreeMap<>();
+    private NavigableMap<LocalDateTime, Double> totalDistanceHistory = new TreeMap<>();
 
 
     private static final String NAME_NOT_SET = "NAME NOT SET";
@@ -121,6 +122,17 @@ public class Athlete implements Serializable, Comparable {
     public void storePaceMeasurement(Double currentPace, LocalDateTime time){
         paceHistory.put(time, currentPace);
     }
+    public void storeTotalDistanceMeasurement(Double totalDistance, LocalDateTime time){
+        totalDistanceHistory.put(time, totalDistance);
+    }
+    public Double getLastTotalDistanceMeasurement(){
+        if(totalDistanceHistory.isEmpty()){
+            LogAccessingEmptyResource(TAG, "trying to access to total distance measure for empty set for the athlete ID: '" + this.athleteID + "'");
+            return null;
+        }
+        return totalDistanceHistory.lastEntry().getValue();
+    }
+
     public Integer getLastHeartRateMeasurement(){
         if(heartRateHistory.isEmpty()){
             LogAccessingEmptyResource(TAG, "trying to access to heart rate measure for empty set for the athlete ID: '" + this.athleteID + "'");

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">TrainerApp</string>
+    <string name="app_name">TrainAround - trainer</string>
     <string name="name">Name</string>
     <string name="activity_settings">Settings</string>
     <string name="trainer_name">Trainer Name</string>

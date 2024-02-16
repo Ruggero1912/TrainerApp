@@ -33,8 +33,6 @@ import android.os.ParcelUuid;
 import android.os.Process;
 import android.util.Log;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.app.ActivityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -47,21 +45,17 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 import it.dii.unipi.trainerapp.GATTserver.profiles.athleteProfile.AthleteProfile;
 import it.dii.unipi.trainerapp.GATTserver.profiles.athleteProfile.services.athleteInformationService.AthleteInformationService;
 import it.dii.unipi.trainerapp.athlete.Athlete;
 import it.dii.unipi.trainerapp.athlete.AthletesManager;
-import it.dii.unipi.trainerapp.ui.AthleteAdapter;
-import it.dii.unipi.trainerapp.ui.WelcomeActivity;
 import it.dii.unipi.trainerapp.utilities.AthleteActivityType;
 import it.dii.unipi.trainerapp.utilities.DeviceID;
 import it.dii.unipi.trainerapp.utilities.ServiceStatus;
-import it.dii.unipi.trainerapp.utilities.Utility;
 
-public class GATTServerActivity extends Service {
-    private static final String TAG = GATTServerActivity.class.getSimpleName();
+public class GATTServerService extends Service {
+    private static final String TAG = GATTServerService.class.getSimpleName();
 
     /* Bluetooth API */
     private BluetoothManager mBluetoothManager;

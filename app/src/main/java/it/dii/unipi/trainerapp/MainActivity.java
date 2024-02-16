@@ -28,7 +28,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import it.dii.unipi.trainerapp.GATTserver.GATTServerActivity;
+import it.dii.unipi.trainerapp.GATTserver.GATTServerService;
 import it.dii.unipi.trainerapp.athlete.Athlete;
 import it.dii.unipi.trainerapp.athlete.IntentMessagesManager;
 import it.dii.unipi.trainerapp.ui.AthleteAdapter;
@@ -280,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
 
         if(isGATTServerStatusReceiverRegistered == false) {
             LocalBroadcastManager.getInstance(this).registerReceiver(GATTServerStatusBroadcastReceiver,
-                    new IntentFilter(GATTServerActivity.GATT_SERVER_STATUS_ACTION));
+                    new IntentFilter(GATTServerService.GATT_SERVER_STATUS_ACTION));
             isGATTServerStatusReceiverRegistered = true;
             Log.v(TAG, "just registered intentReceiver for GATTServerStatus");
         }else{
@@ -290,7 +290,7 @@ public class MainActivity extends AppCompatActivity {
         if(GATTServerServiceStatus != ServiceStatus.RUNNING) {
             if( ! pendingStartServiceCommandGATTServer) {
                 Log.v(TAG, "startGATTServerService: going to send a startService Intent to GATTServer");
-                Intent intent = new Intent(this, GATTServerActivity.class);
+                Intent intent = new Intent(this, GATTServerService.class);
                 startService(intent);
                 pendingStartServiceCommandGATTServer = true;
             }else {
@@ -303,7 +303,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void stopGATTServerService(){
         Log.v(TAG, "stopGATTServerService: going to send a stopService Intent to GATTServer");
-        Intent intent = new Intent(this, GATTServerActivity.class);
+        Intent intent = new Intent(this, GATTServerService.class);
         stopService(intent);
     }
 
@@ -312,7 +312,7 @@ public class MainActivity extends AppCompatActivity {
     private BroadcastReceiver GATTServerStatusBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            ServiceStatus newStatus = (ServiceStatus) intent.getSerializableExtra(GATTServerActivity.SERVICE_STATUS_KEY);
+            ServiceStatus newStatus = (ServiceStatus) intent.getSerializableExtra(GATTServerService.SERVICE_STATUS_KEY);
             GATTServerServiceStatus = newStatus;
             Log.d(TAG, "received a new state for the GATTServerService; now it is: " + GATTServerServiceStatus.name());
             if(newStatus == ServiceStatus.RUNNING){

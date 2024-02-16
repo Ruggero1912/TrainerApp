@@ -69,7 +69,7 @@ public final class Utility {
         }
     }
 
-    private static boolean hasPermissions(String[] permissions, Context ctx) {
+    public static boolean hasPermissions(String[] permissions, Context ctx) {
         if (permissions != null) {
             for (String permission : permissions) {
                 if (ActivityCompat.checkSelfPermission(ctx , permission) != PackageManager.PERMISSION_GRANTED) {

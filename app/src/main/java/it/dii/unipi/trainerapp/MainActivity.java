@@ -6,13 +6,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -56,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private String insertedTrainerName;
     private boolean darkThemeEnabled;
     private TextView trainerName;
+    private TextView permissionsWarningTextView;
 
 
     protected static int permissionAskedCounter = 0;
@@ -122,6 +126,22 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         myPreferences = Preferences.getPreferences(this);
         trainerName = findViewById(R.id.welcomeLabel);
+        permissionsWarningTextView = findViewById(R.id.permissionsWarning);
+
+
+        permissionsWarningTextView.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent();
+                intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                Uri uri = Uri.fromParts("package", getPackageName(), null);
+                intent.setData(uri);
+                startActivity(intent);
+            }
+        });
+
+
         myPreferences.registerOnSharedPreferenceChangeListener(sharedPrefListener); // register for changes on preferences
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); // Devices with a display should not go to sleep
 
@@ -290,7 +310,11 @@ public class MainActivity extends AppCompatActivity {
             Utility.askPermissions(multiplePermissionLauncher, getApplicationContext());
             permissionAskedCounter++;
         }//multiplePermissionsContract = new ActivityResultContracts.RequestMultiplePermissions();
-
+        if(Utility.hasPermissions(Utility.getPERMISSIONS_OVER_SDK31(), getApplicationContext())){
+            permissionsWarningTextView.setVisibility(View.INVISIBLE);
+        }else{
+            permissionsWarningTextView.setVisibility(View.VISIBLE);
+        }
         //multiplePermissionLauncher.launch(Utility.getPERMISSIONS_OVER_SDK31());
         Log.v(TAG, "onResume completed");
     }

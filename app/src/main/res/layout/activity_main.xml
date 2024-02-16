@@ -7,10 +7,9 @@
     tools:context=".MainActivity">
 
 
-
     <TextView
         android:id="@+id/welcomeLabel"
-        android:layout_width="408dp"
+        android:layout_width="fill_parent"
         android:layout_height="37dp"
         android:layout_marginTop="208dp"
         android:layout_marginBottom="24dp"
@@ -47,6 +46,7 @@
         android:textSize="20sp"
         app:layout_constraintBottom_toTopOf="@+id/lvAthletes"
         app:layout_constraintStart_toStartOf="parent" />
+
     <ListView
         android:id="@+id/lvAthletes"
         android:layout_width="match_parent"
@@ -55,5 +55,19 @@
         app:layout_constraintBottom_toBottomOf="parent">
 
     </ListView>
+
+    <TextView
+        android:id="@+id/permissionsWarning"
+        android:layout_width="match_parent"
+        android:textAlignment="center"
+        android:layout_height="37dp"
+        android:text="@string/permissions_warning"
+        app:layout_constraintBottom_toTopOf="@id/foundDevicesLabel"
+        android:layout_marginStart="10dp"
+        android:layout_marginBottom="40dp"
+        app:layout_constraintHorizontal_bias="1.0"
+        android:visibility="invisible"
+        app:layout_constraintStart_toEndOf="@id/welcomeLabel"
+         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -23,6 +23,8 @@ public class WelcomeActivity extends AppCompatActivity {
 
     private static final String TAG = WelcomeActivity.class.getSimpleName();
 
+    private EditText nameInputText;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,9 +34,15 @@ public class WelcomeActivity extends AppCompatActivity {
 
         Preferences.getPreferences(getApplicationContext());
 
+        nameInputText = (EditText) findViewById(R.id.trainerNameInput);
+
+
+
+
         if( ! Preferences.getTrainerName().equals(Preferences.TRAINER_NAME_NOT_FOUND)) {
-            EditText nameInputText = (EditText) findViewById(R.id.trainerNameInput);
             nameInputText.setText(Preferences.getTrainerName());
+        }else{
+            nameInputText.setSelectAllOnFocus(true);
         }
 
         Button settingsConfirm = (Button) findViewById(R.id.settingsConfirm);

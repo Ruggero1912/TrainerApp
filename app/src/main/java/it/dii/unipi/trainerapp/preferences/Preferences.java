@@ -12,7 +12,7 @@ import java.util.Set;
 public class Preferences implements SharedPreferences{
 
     private static final String TRAINER_NAME_KEY = "trainerName";
-    private static final String TRAINER_NAME_NOT_FOUND = "Name not found";
+    public static final String TRAINER_NAME_NOT_FOUND = "Name not found";
     private static final String DARK_THEME_KEY = "themeSwitch";
 
     private static Preferences myPreferences;

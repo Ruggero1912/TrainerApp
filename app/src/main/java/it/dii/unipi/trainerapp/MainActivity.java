@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private final String INTENT_ACTION = "update-athlete-list";
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    private boolean settingsInizialized = false;
+    private boolean settingsInitialized = false;
     private ActivityResultLauncher<Intent> welcomeActivityResultLauncher;
     public static AthleteAdapter adapter; //should be private
     public static  ArrayList<Athlete> arrayOfAthletes; //should be private
@@ -56,6 +56,9 @@ public class MainActivity extends AppCompatActivity {
     private String insertedTrainerName;
     private boolean darkThemeEnabled;
     private TextView trainerName;
+
+
+    protected static int permissionAskedCounter = 0;
 
     //For runtime permissions requests
     private ActivityResultContracts.RequestMultiplePermissions multiplePermissionsContract;
@@ -122,23 +125,34 @@ public class MainActivity extends AppCompatActivity {
         myPreferences.registerOnSharedPreferenceChangeListener(sharedPrefListener); // register for changes on preferences
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); // Devices with a display should not go to sleep
 
-        //RUNTIME PERMISSIONS
+        if(isGATTServerStatusReceiverRegistered == false) {
+            Log.d(TAG, "Registering broadcast receiver for GATT_SERVER_STATUS_ACTION");
+            LocalBroadcastManager.getInstance(this).registerReceiver(GATTServerStatusBroadcastReceiver,
+                    new IntentFilter(GATTServerService.GATT_SERVER_STATUS_ACTION));
+            isGATTServerStatusReceiverRegistered = true;
+            Log.v(TAG, "just registered intentReceiver for GATTServerStatus");
+        }else{
+            Log.v(TAG, "will not register intentReceiver for GATTServerStatus since it is already registered");
+        }
 
+        //Utility.askPermissions(multiplePermissionLauncher,this);
         multiplePermissionsContract = new ActivityResultContracts.RequestMultiplePermissions();
         multiplePermissionLauncher = registerForActivityResult(multiplePermissionsContract, isGranted -> {
             Log.d("PERMISSIONS", "Launcher result: " + isGranted.toString());
-            if (isGranted.containsValue(false)) {
-                Log.d("PERMISSIONS", "At least one of the permissions was not granted, launching again...");
-                if (Utility.getSdkVersion() >= 31) {
-                    multiplePermissionLauncher.launch(Utility.getPERMISSIONS_OVER_SDK31());
-                }
+            if (isGranted.containsValue(false) || isGranted.size() == 0) {
+                Log.d("PERMISSIONS", "At least one of the permissions was not granted");
+
+                if(permissionAskedCounter > 0)
+                    Toast.makeText(getApplicationContext(), "Permissions were not granted, cannot handle bluetooth network", Toast.LENGTH_LONG).show();
+                //if (Utility.getSdkVersion() >= 31) {
+                //    multiplePermissionLauncher.launch(Utility.getPERMISSIONS_OVER_SDK31());
+                //}
             }else{
                 // we must start the GATT server only when the permissions are granted
+                Log.d(TAG, "Going to start GATTServer from multiplePermissionLauncher callback");
                 startGATTServerService();
             }
         });
-
-        Utility.askPermissions(multiplePermissionLauncher,this);
 
 
         //we need to start the GATTServer Service sending an Intent to it
@@ -156,27 +170,14 @@ public class MainActivity extends AppCompatActivity {
 
         trainerNameFirstLaunch = Preferences.getTrainerName();
 
-        if(!trainerNameFirstLaunch.equals("Name not found")){
-            settingsInizialized=true;
-        }
-
-        if(!settingsInizialized) {
-            welcomeActivityResultLauncher = registerForActivityResult(
-                    new ActivityResultContracts.StartActivityForResult(),
-                    result -> {
-                        if (result.getResultCode() == Activity.RESULT_OK) {
-                            Intent data = result.getData();
-                            trainerNameFirstLaunch = data.getStringExtra(TRAINER_NAME_KEY);
-                            settingsInizialized = true;
-                            Toast.makeText(getApplicationContext(),"Name saved successfully!", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-            //send an intent to Welcome Activity
-            openWelcomeActivityForResult();
-        }
-        else {
+        if(!trainerNameFirstLaunch.equals(Preferences.TRAINER_NAME_NOT_FOUND)){
+            settingsInitialized = true;
             TextView trainerNameFirstLaunchLabel = (TextView) findViewById(R.id.welcomeLabel);
             trainerNameFirstLaunchLabel.append(trainerNameFirstLaunch);
+        }
+        else {
+            //send an intent to Welcome Activity
+            openWelcomeActivityForResult();
         }
 
         darkThemeEnabled = Preferences.getDarkThemeValue();
@@ -217,9 +218,35 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private static boolean pendingWelcomeActivity = false;
     public void openWelcomeActivityForResult() {
+        Log.d(TAG, "received a call to openWelcomeActivityForResult");
+
+        if(settingsInitialized){
+            Log.w(TAG, "openWelcomeActivityForResult stopping since settingsInitialized is true");
+            return;
+        }
+        if(pendingWelcomeActivity){
+            Log.w(TAG, "openWelcomeActivityForResult stopping since there is a pendingWelcomeActivity");
+            return;
+        }
+
+        welcomeActivityResultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        Intent data = result.getData();
+                        trainerNameFirstLaunch = data.getStringExtra(TRAINER_NAME_KEY);
+                        settingsInitialized = true;
+                        pendingWelcomeActivity = false;
+                        Toast.makeText(getApplicationContext(),"Name saved successfully!", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+
         Intent intent = new Intent(this, WelcomeActivity.class);
         welcomeActivityResultLauncher.launch(intent);
+        pendingWelcomeActivity = true;
     }
 
     public void initializeAthletesList() {
@@ -250,11 +277,22 @@ public class MainActivity extends AppCompatActivity {
         Log.v(TAG, "onPause method has been called on MainActivity");
     }
 
+
     @Override
     protected void onResume() {
         super.onResume();
-        Log.v(TAG, "I am onResume, going to call startGATTServerService");
-        startGATTServerService();
+        Log.v(TAG, "I am onResume, going to check permissions and then call startGATTServerService");
+        //startGATTServerService();
+
+        //RUNTIME PERMISSIONS
+        if(permissionAskedCounter < 3) {
+            Log.d(TAG, "Going to ask for permissions. permissionAskedCounter: " + permissionAskedCounter);
+            Utility.askPermissions(multiplePermissionLauncher, getApplicationContext());
+            permissionAskedCounter++;
+        }//multiplePermissionsContract = new ActivityResultContracts.RequestMultiplePermissions();
+
+        //multiplePermissionLauncher.launch(Utility.getPERMISSIONS_OVER_SDK31());
+        Log.v(TAG, "onResume completed");
     }
 
     @Override
@@ -278,14 +316,6 @@ public class MainActivity extends AppCompatActivity {
      */
     private void startGATTServerService(){
 
-        if(isGATTServerStatusReceiverRegistered == false) {
-            LocalBroadcastManager.getInstance(this).registerReceiver(GATTServerStatusBroadcastReceiver,
-                    new IntentFilter(GATTServerService.GATT_SERVER_STATUS_ACTION));
-            isGATTServerStatusReceiverRegistered = true;
-            Log.v(TAG, "just registered intentReceiver for GATTServerStatus");
-        }else{
-            Log.v(TAG, "will not register intentReceiver for GATTServerStatus since it is already registered");
-        }
 
         if(GATTServerServiceStatus != ServiceStatus.RUNNING) {
             if( ! pendingStartServiceCommandGATTServer) {

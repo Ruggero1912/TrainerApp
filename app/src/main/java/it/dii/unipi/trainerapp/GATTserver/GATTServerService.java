@@ -122,10 +122,9 @@ public class GATTServerService extends Service {
             Log.d(TAG, "Bluetooth is currently disabled...enabling");
 
             if( ! canBluetoothConnect() ) {
-                // WE MUST NOT END IN THIS CASE
+                // WE MUST END IN THIS CASE
+                // a service cannot ask for other permissions
                 Log.e(TAG, "Bluetooth cannot connect but the service was started, this is an error");
-                // askBluetoothPermissions();
-                //return;
                 this.stopSelf();
                 return;
             }
@@ -159,7 +158,8 @@ public class GATTServerService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         //super.onStart();
         if(serviceHandler == null){
-            Toast.makeText(getApplicationContext(), "Cannot access bluetooth, stopping GATTServerService", Toast.LENGTH_LONG).show();
+            //Toast.makeText(getApplicationContext(), "Cannot access bluetooth, stopping GATTServerService", Toast.LENGTH_LONG).show();
+            Log.w(TAG, "Cannot access bluetooth, stopping GATTServerService, returing START_REDELIVER_INTENT");
             this.stopSelf();
             return START_REDELIVER_INTENT;
         }
@@ -238,7 +238,8 @@ public class GATTServerService extends Service {
                 // to handle the case where the user grants the permission. See the documentation
                 // for ActivityCompat#requestPermissions for more details.
                 //FENOM: qui sarebbe meglio gestire la richiesta dei permessi e poi non fare return ma vedere come si fa in questo caso
-                Toast.makeText(getApplicationContext(), "BLUETOOTH_CONNECT permission missing! return...", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "BLUETOOTH_CONNECT permission missing! return...", Toast.LENGTH_LONG).show();
+                Log.w(TAG, "BLUETOOTH_CONNECT permission missing!");
                 return false;
             }
         }else{
@@ -277,11 +278,11 @@ public class GATTServerService extends Service {
     same as below
      */
 
+    /*
     private void askBluetoothPermissions(){
-        //FENOM: TODO: ma va implementato o no? Sembra che i permessi del bluetooth non vadano chiesti a runtime mai, dovrebbe bastare specificarli nel manifest...
 
         //RUNTIME PERMISSIONS
-        /*
+
         // we cannot request for permissions from a Service
         multiplePermissionsContract = new ActivityResultContracts.RequestMultiplePermissions();
         multiplePermissionLauncher = registerForActivityResult(multiplePermissionsContract, isGranted -> {
@@ -294,10 +295,9 @@ public class GATTServerService extends Service {
             }
         });
         Utility.askPermissions(multiplePermissionLauncher,this);
-        */
-
         return;
     }
+    */
 
     /**
      * Listens for Bluetooth adapter events to enable/disable
@@ -355,6 +355,10 @@ public class GATTServerService extends Service {
         if(canBluetoothAdvertise()) {
             mBluetoothLeAdvertiser
                     .startAdvertising(settings, data, mAdvertiseCallback);
+        }else{
+            Log.w(TAG, "Cannot advertise");
+            //FENOM: should tell to the mainActivity to request for permissions and should stop
+            stopSelf();
         }
     }
 
@@ -377,6 +381,8 @@ public class GATTServerService extends Service {
     @SuppressWarnings("MissingPermission")
     private void startServer() {
         if( ! canBluetoothConnect()){
+            Log.w(TAG, "BLUETOOTH CONNECT permission was not granted! stopping");
+            this.stopSelf();
             return;
         }
         mBluetoothGattServer = mBluetoothManager.openGattServer(this, mGattServerCallback);

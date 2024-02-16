@@ -6,4 +6,5 @@
     <string name="heart_rate_series">Heart Rate Series</string>
     <string name="speed_series">Speed Series</string>
     <string name="permissions_warning">⚠ MISSING PERMISSIONS ⚠</string>
+    <string name="empty_list_view">No athletes around... Open TrainAround on a WearOS device</string>
 </resources>

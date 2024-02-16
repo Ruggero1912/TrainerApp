@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
         if(!trainerNameFirstLaunch.equals(Preferences.TRAINER_NAME_NOT_FOUND)){
             settingsInitialized = true;
             TextView trainerNameFirstLaunchLabel = (TextView) findViewById(R.id.welcomeLabel);
-            trainerNameFirstLaunchLabel.append(trainerNameFirstLaunch);
+            updateTrainerName(trainerNameFirstLaunch);
         }
         else {
             //send an intent to Welcome Activity
@@ -205,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void updateTrainerName(String name) {
-        trainerName.setText("Welcome "+name);
+        trainerName.setText("Coach "+ name + " team");
     }
 
     public void updateDarkTheme(boolean darkThemeEnabled) {
@@ -277,6 +277,10 @@ public class MainActivity extends AppCompatActivity {
         adapter = new AthleteAdapter(this, arrayOfAthletes);
         // Attach the adapter to a ListView
         ListView listView = (ListView) findViewById(R.id.lvAthletes);
+
+        TextView emptyLVTextMessage = (TextView) findViewById(R.id.emptyLvAthletes);
+        listView.setEmptyView( emptyLVTextMessage );
+
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

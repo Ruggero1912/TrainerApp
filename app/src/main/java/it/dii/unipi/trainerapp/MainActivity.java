@@ -132,6 +132,9 @@ public class MainActivity extends AppCompatActivity {
                 if (Utility.getSdkVersion() >= 31) {
                     multiplePermissionLauncher.launch(Utility.getPERMISSIONS_OVER_SDK31());
                 }
+            }else{
+                // we must start the GATT server only when the permissions are granted
+                startGATTServerService();
             }
         });
 
@@ -139,7 +142,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         //we need to start the GATTServer Service sending an Intent to it
-        startGATTServerService();
+        //startGATTServerService();
+        // we must start the GATT server only when the permissions are granted
 
         initializeAthletesList();
 
@@ -313,6 +317,10 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "received a new state for the GATTServerService; now it is: " + GATTServerServiceStatus.name());
             if(newStatus == ServiceStatus.RUNNING){
                 //Log.d(TAG, "");
+                pendingStartServiceCommandGATTServer = false;
+            }
+            else if(newStatus == ServiceStatus.TERMINATED){
+                Log.d(TAG, "The received status is TERMINATED, setting pendingStartServiceCommandGATTServer to false");
                 pendingStartServiceCommandGATTServer = false;
             }
         }

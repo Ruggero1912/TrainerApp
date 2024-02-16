@@ -31,6 +31,7 @@ public class WelcomeActivity extends AppCompatActivity {
                 //get the trainer name from the text input
                 EditText trainerNameInput = (EditText) findViewById(R.id.trainerNameInput);
                 String inputData = trainerNameInput.getText().toString();
+                Preferences.getPreferences(getApplicationContext());
                 Preferences.setTrainerName(inputData);
                 //send back to MainActivity an intent with trainer's name attached
                 Intent returnIntent = new Intent();

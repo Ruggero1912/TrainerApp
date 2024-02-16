@@ -33,6 +33,8 @@ import android.os.ParcelUuid;
 import android.os.Process;
 import android.util.Log;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.app.ActivityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -52,9 +54,11 @@ import it.dii.unipi.trainerapp.GATTserver.profiles.athleteProfile.services.athle
 import it.dii.unipi.trainerapp.athlete.Athlete;
 import it.dii.unipi.trainerapp.athlete.AthletesManager;
 import it.dii.unipi.trainerapp.ui.AthleteAdapter;
+import it.dii.unipi.trainerapp.ui.WelcomeActivity;
 import it.dii.unipi.trainerapp.utilities.AthleteActivityType;
 import it.dii.unipi.trainerapp.utilities.DeviceID;
 import it.dii.unipi.trainerapp.utilities.ServiceStatus;
+import it.dii.unipi.trainerapp.utilities.Utility;
 
 public class GATTServerActivity extends Service {
     private static final String TAG = GATTServerActivity.class.getSimpleName();
@@ -123,30 +127,35 @@ public class GATTServerActivity extends Service {
         if (!bluetoothAdapter.isEnabled()) {
             Log.d(TAG, "Bluetooth is currently disabled...enabling");
 
-            if( canBluetoothConnect()){
-                bluetoothAdapter.enable();
-                Log.d(TAG, "I have just enabled the Bluetooth Adapter that was disabled...");
-            }else{
-                askBluetoothPermissions();
+            if( ! canBluetoothConnect() ) {
+                // WE MUST NOT END IN THIS CASE
+                Log.e(TAG, "Bluetooth cannot connect but the service was started, this is an error");
+                // askBluetoothPermissions();
+                //return;
+                this.stopSelf();
                 return;
             }
-        } else {
-            Log.d(TAG, "Bluetooth enabled...starting services");
+            bluetoothAdapter.enable();
+            Log.d(TAG, "I have just enabled the Bluetooth Adapter that was disabled...");
 
-            // Start up the thread running the service. Note that we create a
-            // separate thread because the service normally runs in the process's
-            // main thread, which we don't want to block. We also make it
-            // background priority so CPU-intensive work doesn't disrupt our UI.
-            //FENOM: is THREAD_PRIORITY_BACKGROUND the best priority choice?
-            // Maybe the server should have an higher priority to handle all the GATT requests fastly
-            thread = new HandlerThread("ServiceStartArguments",
-                    Process.THREAD_PRIORITY_MORE_FAVORABLE);    //THREAD_PRIORITY_BACKGROUND
-            thread.start();
-
-            // Get the HandlerThread's Looper and use it for our Handler
-            serviceLooper = thread.getLooper();
-            serviceHandler = new ServiceHandler(serviceLooper);
         }
+
+        Log.d(TAG, "Bluetooth enabled...starting services");
+
+        // Start up the thread running the service. Note that we create a
+        // separate thread because the service normally runs in the process's
+        // main thread, which we don't want to block. We also make it
+        // background priority so CPU-intensive work doesn't disrupt our UI.
+        //FENOM: is THREAD_PRIORITY_BACKGROUND the best priority choice?
+        // Maybe the server should have an higher priority to handle all the GATT requests fastly
+        thread = new HandlerThread("ServiceStartArguments",
+                Process.THREAD_PRIORITY_MORE_FAVORABLE);    //THREAD_PRIORITY_BACKGROUND
+        thread.start();
+
+        // Get the HandlerThread's Looper and use it for our Handler
+        serviceLooper = thread.getLooper();
+        serviceHandler = new ServiceHandler(serviceLooper);
+
 
         Log.v(TAG, "GATTServerService.onStartCommand: notifying broadcast message for new Service status: RUNNING");
         broadcastStatusUpdate(ServiceStatus.RUNNING);
@@ -155,7 +164,11 @@ public class GATTServerActivity extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         //super.onStart();
-
+        if(serviceHandler == null){
+            Toast.makeText(getApplicationContext(), "Cannot access bluetooth, stopping GATTServerService", Toast.LENGTH_LONG).show();
+            this.stopSelf();
+            return START_REDELIVER_INTENT;
+        }
         // For each start request, send a message to start a job and deliver the
         // start ID so we know which request we're stopping when we finish the job
         Message msg = serviceHandler.obtainMessage();
@@ -187,13 +200,14 @@ public class GATTServerActivity extends Service {
         broadcastStatusUpdate(ServiceStatus.TERMINATED);
 
         Log.d(TAG, "Going to call thread.quit()");
-
-        boolean closed = thread.quit();
-        if(!closed){
-            Log.d(TAG, "Unable to quit the Thread");
-        } else {
-            Log.d(TAG, "GATTServer Thread correctly killed");
-        };
+        if(thread != null) {
+            boolean closed = thread.quit();
+            if (!closed) {
+                Log.d(TAG, "Unable to quit the Thread");
+            } else {
+                Log.d(TAG, "GATTServer Thread correctly killed");
+            }
+        }
         super.onDestroy();
     }
 
@@ -222,6 +236,8 @@ public class GATTServerActivity extends Service {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
                 //    ActivityCompat#requestPermissions
+                // WE MUST ASK FOR PERMISSION BEFORE STARTING THE SERVICE
+                //ActivityCompat.requestPermissions(WelcomeActivity.this, Manifest.permission.BLUETOOTH_CONNECT);
                 // here to request the missing permissions, and then overriding
                 //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
                 //                                          int[] grantResults)
@@ -260,8 +276,32 @@ public class GATTServerActivity extends Service {
         return true;
     }
 
+    //For runtime permissions requests
+    /*
+    private ActivityResultContracts.RequestMultiplePermissions multiplePermissionsContract;
+    private ActivityResultLauncher<String[]> multiplePermissionLauncher;
+    same as below
+     */
+
     private void askBluetoothPermissions(){
         //FENOM: TODO: ma va implementato o no? Sembra che i permessi del bluetooth non vadano chiesti a runtime mai, dovrebbe bastare specificarli nel manifest...
+
+        //RUNTIME PERMISSIONS
+        /*
+        // we cannot request for permissions from a Service
+        multiplePermissionsContract = new ActivityResultContracts.RequestMultiplePermissions();
+        multiplePermissionLauncher = registerForActivityResult(multiplePermissionsContract, isGranted -> {
+            Log.d("PERMISSIONS", "Launcher result: " + isGranted.toString());
+            if (isGranted.containsValue(false)) {
+                Log.d("PERMISSIONS", "At least one of the permissions was not granted, launching again...");
+                if (Utility.getSdkVersion() >= 31) {
+                    multiplePermissionLauncher.launch(Utility.getPERMISSIONS_OVER_SDK31());
+                }
+            }
+        });
+        Utility.askPermissions(multiplePermissionLauncher,this);
+        */
+
         return;
     }
 
@@ -300,6 +340,7 @@ public class GATTServerActivity extends Service {
         mBluetoothLeAdvertiser = bluetoothAdapter.getBluetoothLeAdvertiser();
         if (mBluetoothLeAdvertiser == null) {
             Log.w(TAG, "Failed to create advertiser");
+            this.stopSelf();
             return;
         }
 
@@ -347,6 +388,7 @@ public class GATTServerActivity extends Service {
         mBluetoothGattServer = mBluetoothManager.openGattServer(this, mGattServerCallback);
         if (mBluetoothGattServer == null) {
             Log.w(TAG, "Unable to create GATT server");
+            this.stopSelf();
             return;
         } else {
             Log.i(TAG, "GATT server created");

@@ -312,6 +312,7 @@ public class MainActivity extends AppCompatActivity {
         }//multiplePermissionsContract = new ActivityResultContracts.RequestMultiplePermissions();
         if(Utility.hasPermissions(Utility.getPERMISSIONS_OVER_SDK31(), getApplicationContext())){
             permissionsWarningTextView.setVisibility(View.INVISIBLE);
+            startGATTServerService();
         }else{
             permissionsWarningTextView.setVisibility(View.VISIBLE);
         }
